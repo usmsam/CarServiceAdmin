@@ -1,12 +1,12 @@
 import api from './axios.instance';
 
 export interface Vehicle {
-  id: string;
-  clientId: string;
+  _id: string;
+  ownerId: string;
   brand: string;
   model: string;
   licensePlate: string;
-  year?: number;
+  vin?: string;
 }
 
 export const VehiclesService = {

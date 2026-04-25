@@ -7,7 +7,7 @@ export const UsersService = {
     return data;
   },
   updateUserRole: async (id: string, role: string): Promise<User> => {
-    const { data } = await api.patch(`/users/${id}/role`, { role });
+    const { data } = await api.patch(`/users/${id}`, { role });
     return data;
   }
 };

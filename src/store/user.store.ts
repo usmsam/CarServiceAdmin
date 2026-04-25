@@ -4,7 +4,7 @@ import { persist } from 'zustand/middleware';
 export type Role = 'SUPERADMIN' | 'OWNER' | 'MANAGER' | 'MASTER' | 'CLIENT';
 
 export interface User {
-  id: string;
+  _id: string;
   telegramId: number;
   username?: string;
   fullName: string;

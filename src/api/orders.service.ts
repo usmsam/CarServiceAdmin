@@ -1,14 +1,17 @@
 import api from './axios.instance';
 
 export interface Order {
-  id: string;
-  orderNumber: string;
-  clientId: string;
-  vehicleId: string;
-  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
-  totalPrice: number;
+  _id: string;
+  serviceId: any;
+  vehicleId: any;
+  clientId: any;
+  masterId: any;
+  status: 'OPEN' | 'IN_PROGRESS' | 'DONE' | 'CLOSED';
+  checklist: any[];
+  services: any[];
+  totalAmount: number;
   createdAt: string;
-  serviceId: string;
+  updatedAt: string;
 }
 
 export const OrdersService = {
@@ -21,7 +24,7 @@ export const OrdersService = {
     return data;
   },
   updateOrderStatus: async (id: string, status: string): Promise<Order> => {
-    const { data } = await api.patch(`/orders/${id}/status`, { status });
+    const { data } = await api.patch(`/orders/${id}`, { status });
     return data;
   }
 };

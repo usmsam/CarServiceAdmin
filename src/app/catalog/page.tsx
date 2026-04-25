@@ -20,14 +20,14 @@ export default function CatalogPage() {
         if (currentUser?.serviceId) {
           const items = await CatalogService.getItems(currentUser.serviceId)
           setData(items)
+        } else {
+          // If no serviceId, maybe fetch all if SUPERADMIN? For now, fetch with undefined if no serviceId.
+          const items = await CatalogService.getItems(currentUser?.activeServiceId || '')
+          setData(items)
         }
       } catch (error) {
-        // Mock data fallback
-        setData([
-          { id: "1", name: "Oil Change", description: "Engine oil change with filter", price: 50, serviceId: "s1" },
-          { id: "2", name: "Brake Pad Replacement", description: "Front and rear brake pads", price: 120, serviceId: "s1" },
-          { id: "3", name: "Wheel Alignment", description: "Computerized wheel alignment", price: 80, serviceId: "s1" },
-        ])
+        console.error("Failed to load catalog", error)
+        setData([])
       } finally {
         setLoading(false)
       }
@@ -37,14 +37,19 @@ export default function CatalogPage() {
 
   const columns: ColumnDef<CatalogItem>[] = [
     {
-      accessorKey: "name",
-      header: "Service Name",
-      cell: ({ row }) => <div className="font-medium">{row.getValue("name")}</div>,
+      accessorKey: "title",
+      header: "Title",
+      cell: ({ row }) => <div className="font-medium">{row.getValue("title")}</div>,
     },
     {
-      accessorKey: "description",
-      header: "Description",
-      cell: ({ row }) => <div className="text-neutral-400">{row.getValue("description") || "-"}</div>,
+      accessorKey: "category",
+      header: "Category",
+      cell: ({ row }) => <div className="text-neutral-400">{row.getValue("category") || "-"}</div>,
+    },
+    {
+      accessorKey: "normHour",
+      header: "Norm Hour",
+      cell: ({ row }) => <div className="text-neutral-400">{row.getValue("normHour")} h</div>,
     },
     {
       accessorKey: "price",
@@ -86,7 +91,7 @@ export default function CatalogPage() {
       {loading ? (
         <div className="text-neutral-400">Loading catalog...</div>
       ) : (
-        <DataTable columns={columns} data={data} searchKey="name" />
+        <DataTable columns={columns} data={data} searchKey="title" />
       )}
     </div>
   )

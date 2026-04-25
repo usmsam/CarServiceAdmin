@@ -19,12 +19,8 @@ export default function UsersPage() {
         const users = await UsersService.getUsers(currentUser?.activeServiceId || undefined)
         setData(users)
       } catch (error) {
-        // Mock data fallback
-        setData([
-          { id: "1", telegramId: 101, fullName: "Ivan Ivanov", role: "MANAGER", serviceId: "s1" },
-          { id: "2", telegramId: 102, fullName: "Petr Petrov", role: "MASTER", serviceId: "s1" },
-          { id: "3", telegramId: 103, fullName: "Aleksey Sidorov", role: "CLIENT", serviceId: "s1" },
-        ])
+        console.error("Failed to load users", error)
+        setData([])
       } finally {
         setLoading(false)
       }
@@ -34,7 +30,7 @@ export default function UsersPage() {
 
   const handleRoleChange = async (userId: string, newRole: string) => {
     // Optimistic UI update
-    setData(prev => prev.map(u => u.id === userId ? { ...u, role: newRole as any } : u))
+    setData(prev => prev.map(u => u._id === userId ? { ...u, role: newRole as any } : u))
     try {
       await UsersService.updateUserRole(userId, newRole)
     } catch (error) {
@@ -69,7 +65,7 @@ export default function UsersPage() {
         return (
           <Select 
             defaultValue={user.role} 
-            onValueChange={(val) => handleRoleChange(user.id, val)}
+            onValueChange={(val) => handleRoleChange(user._id, val)}
           >
             <SelectTrigger className="w-[140px] h-8 text-xs border-neutral-800 bg-neutral-900/50">
               <SelectValue placeholder="Select Role" />

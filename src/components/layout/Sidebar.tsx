@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, ShoppingCart, Users, Wrench, Settings, LogOut } from "lucide-react"
+import { LayoutDashboard, ShoppingCart, Users, Wrench, Settings, LogOut, Car } from "lucide-react"
 import { useUserStore } from "@/store/user.store"
 
 export function Sidebar() {
@@ -20,6 +20,12 @@ export function Sidebar() {
       label: "Orders",
       icon: ShoppingCart,
       href: "/orders",
+      show: true,
+    },
+    {
+      label: "Vehicles",
+      icon: Car,
+      href: "/vehicles",
       show: true,
     },
     {
