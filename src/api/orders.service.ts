@@ -26,5 +26,16 @@ export const OrdersService = {
   updateOrderStatus: async (id: string, status: string): Promise<Order> => {
     const { data } = await api.patch(`/orders/${id}`, { status });
     return data;
+  },
+  createOrder: async (order: Partial<Order>): Promise<Order> => {
+    const { data } = await api.post('/orders', order);
+    return data;
+  },
+  updateOrder: async (id: string, order: Partial<Order>): Promise<Order> => {
+    const { data } = await api.patch(`/orders/${id}`, order);
+    return data;
+  },
+  deleteOrder: async (id: string): Promise<void> => {
+    await api.delete(`/orders/${id}`);
   }
 };

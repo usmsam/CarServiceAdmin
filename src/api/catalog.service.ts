@@ -2,16 +2,13 @@ import api from './axios.instance';
 
 export interface CatalogItem {
   _id: string;
-  category: string;
+  categoryId: any;
   title: string;
-  price: number;
-  normHour: number;
-  serviceId: string;
 }
 
 export const CatalogService = {
-  getItems: async (serviceId: string): Promise<CatalogItem[]> => {
-    const { data } = await api.get('/service-catalogs', { params: { serviceId } });
+  getItems: async (): Promise<CatalogItem[]> => {
+    const { data } = await api.get('/service-catalogs');
     return data;
   },
   createItem: async (item: Partial<CatalogItem>): Promise<CatalogItem> => {

@@ -21,21 +21,16 @@ function AuthContent() {
         login(user, authToken)
         router.push('/')
       } catch (error) {
-        console.error('Failed to authenticate with token:', error)
-        // could show an error state
+        console.error('Не удалось авторизоваться по токену:', error)
       }
     }
 
     if (token) {
       authenticate(token)
     } else {
-      // If no token in URL, check if we have one in localStorage
       const existingToken = localStorage.getItem('token')
       if (existingToken) {
         authenticate(existingToken)
-      } else {
-        // Fallback for development, since we might not have a bot running
-        // Normally you'd show a "Login via Telegram" button here
       }
     }
   }, [searchParams, router, login])
@@ -45,25 +40,24 @@ function AuthContent() {
       <div className="bg-neutral-900 border border-neutral-800 p-8 rounded-xl shadow-2xl flex flex-col items-center w-full max-w-sm">
         <h1 className="text-2xl font-bold mb-6 text-blue-500">AvtoLog Admin</h1>
         <Loader2 className="h-8 w-8 animate-spin text-blue-500 mb-4" />
-        <p className="text-neutral-400">Authenticating...</p>
+        <p className="text-neutral-400">Проверка авторизации...</p>
         
-        {/* Placeholder for manual login in development */}
         {process.env.NODE_ENV === 'development' && (
           <div className="mt-8 pt-6 border-t border-neutral-800 w-full text-center">
-            <p className="text-xs text-neutral-500 mb-2">Dev Quick Login:</p>
+            <p className="text-xs text-neutral-500 mb-2">Быстрый вход (Dev):</p>
             <button 
               onClick={() => {
                 login({
-                  id: "dev-id",
+                  _id: "dev-id",
                   telegramId: 12345,
-                  fullName: "Dev User",
+                  fullName: "Разработчик",
                   role: "SUPERADMIN"
                 }, "dev-token")
                 router.push('/')
               }}
               className="text-sm text-blue-400 hover:underline"
             >
-              Login as SuperAdmin
+              Войти как SuperAdmin
             </button>
           </div>
         )}
