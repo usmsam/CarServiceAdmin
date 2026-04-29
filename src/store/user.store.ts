@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-export type Role = 'SUPERADMIN' | 'OWNER' | 'MANAGER' | 'MASTER' | 'CLIENT' | 'GUEST' | 'MECHANIC';
+export type Role = 'SUPERADMIN' | 'OWNER' | 'CLIENT' | 'GUEST' | 'MECHANIC';
 
 export interface User {
   _id: string;
