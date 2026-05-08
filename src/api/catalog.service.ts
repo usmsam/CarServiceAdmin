@@ -4,11 +4,12 @@ export interface CatalogItem {
   _id: string;
   categoryId: any;
   title: string;
+  price: number;
 }
 
 export const CatalogService = {
-  getItems: async (): Promise<CatalogItem[]> => {
-    const { data } = await api.get('/service-catalogs');
+  getItems: async (serviceId?: string): Promise<CatalogItem[]> => {
+    const { data } = await api.get('/service-catalogs', { params: { serviceId } });
     return data;
   },
   createItem: async (item: Partial<CatalogItem>): Promise<CatalogItem> => {
