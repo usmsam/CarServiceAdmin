@@ -2,14 +2,28 @@
 
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Activity, Car, CreditCard, ShoppingBag } from "lucide-react"
+import { Activity, Car, CreditCard, ShoppingBag, TrendingUp } from "lucide-react"
 import { OrdersService, Order } from "@/api/orders.service"
 import { VehiclesService } from "@/api/vehicles.service"
 import { UsersService } from "@/api/users.service"
-import { useUserStore } from "@/store/user.store"
+import { motion } from "framer-motion"
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+}
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+}
 
 export default function DashboardPage() {
-  const { activeServiceId } = useUserStore()
   const [orders, setOrders] = useState<Order[]>([])
   const [vehiclesCount, setVehiclesCount] = useState(0)
   const [mastersCount, setMastersCount] = useState(0)
@@ -22,12 +36,12 @@ export default function DashboardPage() {
         const [ordersRes, vehiclesRes, usersRes] = await Promise.all([
           OrdersService.getOrders(),
           VehiclesService.getVehicles(),
-          UsersService.getUsers(activeServiceId || undefined),
+          UsersService.getUsers(undefined), // No activeServiceId filter for superadmin
         ])
 
         setOrders(ordersRes)
         setVehiclesCount(vehiclesRes.length)
-        setMastersCount(usersRes.filter(u => u.role === 'MASTER' || u.role === 'MECHANIC').length)
+        setMastersCount(usersRes.filter(u => u.role === 'MECHANIC' || u.role === 'OWNER').length)
       } catch (error) {
         console.error("Не удалось загрузить данные для дашборда", error)
       } finally {
@@ -35,7 +49,7 @@ export default function DashboardPage() {
       }
     }
     fetchData()
-  }, [activeServiceId])
+  }, [])
 
   const totalOrders = orders.length
   const totalRevenue = orders.reduce((sum, order) => sum + (order.totalAmount || 0), 0)
@@ -52,24 +66,32 @@ export default function DashboardPage() {
       value: totalOrders.toString(),
       icon: ShoppingBag,
       description: "Все оформленные заявки",
+      color: "text-blue-400",
+      bg: "bg-blue-400/10",
     },
     {
       title: "Общая выручка",
       value: formattedRevenue,
       icon: CreditCard,
       description: "Сумма по всем работам",
+      color: "text-emerald-400",
+      bg: "bg-emerald-400/10",
     },
     {
       title: "Автомобилей в базе",
       value: vehiclesCount.toString(),
       icon: Car,
       description: "Зарегистрированный автопарк",
+      color: "text-purple-400",
+      bg: "bg-purple-400/10",
     },
     {
       title: "Мастеров",
       value: mastersCount.toString(),
       icon: Activity,
       description: "Сотрудники в штате",
+      color: "text-orange-400",
+      bg: "bg-orange-400/10",
     },
   ]
 
@@ -78,70 +100,109 @@ export default function DashboardPage() {
     .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
     .slice(0, 5)
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[60vh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+      </div>
+    )
+  }
+
   return (
-    <div className="space-y-6">
+    <motion.div 
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
+      className="space-y-8"
+    >
       <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight text-white">Панель управления</h2>
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-white to-neutral-400 bg-clip-text text-transparent">
+            Панель управления
+          </h2>
+          <p className="text-neutral-400 mt-1">Сводка данных по всем филиалам платформы.</p>
+        </div>
       </div>
       
-      {loading ? (
-        <div className="text-neutral-400">Загрузка статистики...</div>
-      ) : (
-        <>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {stats.map((stat, i) => (
-              <Card key={i} className="bg-neutral-900 border-neutral-800 text-white">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-neutral-400">
-                    {stat.title}
-                  </CardTitle>
-                  <stat.icon className="h-4 w-4 text-blue-500" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stat.value}</div>
-                  <p className="text-xs text-neutral-500 mt-1">
-                    {stat.description}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
+      <motion.div variants={itemVariants} className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {stats.map((stat, i) => (
+          <div key={i} className="group relative overflow-hidden rounded-2xl bg-neutral-900/40 border border-neutral-800/50 backdrop-blur-md transition-all duration-300 hover:bg-neutral-900/60 hover:shadow-2xl hover:shadow-blue-900/20 hover:-translate-y-1">
+            <div className={`absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity duration-500 ${stat.color}`}>
+              <stat.icon className="h-24 w-24 -mr-8 -mt-8" />
+            </div>
+            <div className="p-6 relative z-10">
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-sm font-medium text-neutral-400">
+                  {stat.title}
+                </p>
+                <div className={`p-2 rounded-xl ${stat.bg}`}>
+                  <stat.icon className={`h-5 w-5 ${stat.color}`} />
+                </div>
+              </div>
+              <div>
+                <div className="text-3xl font-bold text-white tracking-tight">
+                  {stat.value}
+                </div>
+                <p className="text-xs text-neutral-500 mt-2 flex items-center gap-1">
+                  <TrendingUp className="h-3 w-3 text-emerald-500" />
+                  {stat.description}
+                </p>
+              </div>
+            </div>
           </div>
-          
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7 mt-4">
-            <Card className="col-span-7 bg-neutral-900 border-neutral-800">
-              <CardHeader>
-                <CardTitle className="text-white">Последние заказы</CardTitle>
-              </CardHeader>
-              <CardContent className="border-t border-neutral-800 p-0">
-                {recentOrders.length === 0 ? (
-                  <div className="p-6 text-center text-neutral-500">Заказов пока нет</div>
-                ) : (
-                  <div className="divide-y divide-neutral-800">
-                    {recentOrders.map((order) => (
-                      <div key={order._id} className="p-4 flex items-center justify-between hover:bg-neutral-900/50 transition-colors">
-                        <div>
-                          <div className="font-medium text-white">Заказ #{order._id.slice(-6)}</div>
-                          <div className="text-xs text-neutral-400 mt-1">
-                            {new Date(order.createdAt || "").toLocaleDateString()}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-4">
-                          <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/30">
-                            {order.status}
-                          </span>
-                          <div className="text-sm font-bold text-white">
-                            {new Intl.NumberFormat("ru-RU", { style: "currency", currency: "RUB" }).format(order.totalAmount)}
-                          </div>
+        ))}
+      </motion.div>
+      
+      <motion.div variants={itemVariants} className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+        <Card className="col-span-7 bg-neutral-900/40 border-neutral-800/50 backdrop-blur-md rounded-2xl overflow-hidden shadow-2xl">
+          <CardHeader className="border-b border-neutral-800/50 pb-4 bg-neutral-900/30">
+            <CardTitle className="text-white text-lg font-medium">Последние заказы</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            {recentOrders.length === 0 ? (
+              <div className="p-8 text-center text-neutral-500">Заказов пока нет</div>
+            ) : (
+              <div className="divide-y divide-neutral-800/50">
+                {recentOrders.map((order, i) => (
+                  <motion.div 
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.1 }}
+                    key={order._id} 
+                    className="p-5 flex items-center justify-between hover:bg-neutral-800/30 transition-colors group"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="h-10 w-10 rounded-full bg-blue-500/10 flex items-center justify-center border border-blue-500/20 group-hover:bg-blue-500/20 transition-colors">
+                        <ShoppingBag className="h-5 w-5 text-blue-400" />
+                      </div>
+                      <div>
+                        <div className="font-semibold text-white">Заказ #{order._id.slice(-6).toUpperCase()}</div>
+                        <div className="text-sm text-neutral-400 mt-0.5">
+                          {new Date(order.createdAt || "").toLocaleDateString('ru-RU', { 
+                            day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' 
+                          })}
                         </div>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        </>
-      )}
-    </div>
+                    </div>
+                    <div className="flex items-center gap-6">
+                      <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${
+                        order.status === 'DONE' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                        order.status === 'OPEN' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
+                        'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                      }`}>
+                        {order.status}
+                      </span>
+                      <div className="text-lg font-bold text-white tabular-nums">
+                        {new Intl.NumberFormat("ru-RU", { style: "currency", currency: "RUB" }).format(order.totalAmount)}
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
+    </motion.div>
   )
 }

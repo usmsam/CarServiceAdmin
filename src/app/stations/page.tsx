@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react"
 import { DataTable } from "@/components/ui/data-table/data-table"
 import { StationsService, ServiceStation } from "@/api/stations.service"
-import { useUserStore } from "@/store/user.store"
 import { ColumnDef } from "@tanstack/react-table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -17,12 +16,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Plus, Trash2, Edit } from "lucide-react"
+import { Plus, Trash2, Edit, Store, MapPin } from "lucide-react"
+import { motion } from "framer-motion"
 
 export default function StationsPage() {
   const [data, setData] = useState<ServiceStation[]>([])
   const [loading, setLoading] = useState(true)
-  const { user: currentUser } = useUserStore()
 
   const [openCreate, setOpenCreate] = useState(false)
   const [openEdit, setOpenEdit] = useState(false)
@@ -46,12 +45,8 @@ export default function StationsPage() {
   }
 
   useEffect(() => {
-    if (currentUser?.role !== "SUPERADMIN") {
-      window.location.href = "/"
-      return
-    }
     fetchData()
-  }, [currentUser])
+  }, [])
 
   const handleCreateStation = async () => {
     try {
@@ -94,24 +89,35 @@ export default function StationsPage() {
     {
       accessorKey: "name",
       header: "Название СТО",
-      cell: ({ row }) => <div className="font-medium text-white">{row.getValue("name")}</div>,
+      cell: ({ row }) => (
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-emerald-500/10 rounded-lg">
+            <Store className="h-4 w-4 text-emerald-400" />
+          </div>
+          <span className="font-medium text-white">{row.getValue("name")}</span>
+        </div>
+      ),
     },
     {
       accessorKey: "address",
       header: "Адрес",
-      cell: ({ row }) => <div className="text-neutral-400">{row.getValue("address") || "-"}</div>,
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2 text-neutral-400">
+          <MapPin className="h-3 w-3" />
+          {row.getValue("address") || "Не указан"}
+        </div>
+      ),
     },
-
     {
       id: "actions",
-      header: () => <div className="text-center">Действия</div>,
+      header: () => <div className="text-right pr-4">Действия</div>,
       cell: ({ row }) => {
         return (
-          <div className="flex justify-center items-center gap-2">
+          <div className="flex justify-end items-center gap-2 pr-4">
             <Button
               variant="ghost"
               size="icon"
-              className="text-blue-500 hover:text-blue-400 hover:bg-blue-500/10"
+              className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/20 transition-colors"
               onClick={() => {
                 setSelectedStation(row.original)
                 setOpenEdit(true)
@@ -122,7 +128,7 @@ export default function StationsPage() {
             <Button
               variant="ghost"
               size="icon"
-              className="text-red-500 hover:text-red-400 hover:bg-red-500/10"
+              className="text-red-400 hover:text-red-300 hover:bg-red-500/20 transition-colors"
               onClick={() => handleDeleteStation(row.original._id)}
             >
               <Trash2 className="h-4 w-4" />
@@ -133,24 +139,26 @@ export default function StationsPage() {
     },
   ]
 
-  if (currentUser?.role !== "SUPERADMIN") return null
-
   return (
-    <div className="space-y-6">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-6"
+    >
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold tracking-tight text-white">Филиалы СТО</h2>
-          <p className="text-neutral-400">Управление филиалами и локациями автосервисов.</p>
+          <p className="text-neutral-400 mt-1">Управление филиалами и локациями автосервисов.</p>
         </div>
         
         <Dialog open={openCreate} onOpenChange={setOpenCreate}>
           <DialogTrigger render={
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+            <Button className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-500/20 border-0">
               <Plus className="h-4 w-4 mr-2" />
               Добавить СТО
             </Button>
           } />
-          <DialogContent className="bg-neutral-950 border-neutral-800 text-white sm:max-w-[425px]">
+          <DialogContent className="bg-neutral-900/90 backdrop-blur-xl border-neutral-800 text-white sm:max-w-[425px]">
             <DialogHeader>
               <DialogTitle>Добавить новое СТО</DialogTitle>
               <DialogDescription className="text-neutral-400">
@@ -163,7 +171,7 @@ export default function StationsPage() {
                 <Input
                   value={selectedStation.name}
                   onChange={(e) => setSelectedStation(prev => ({ ...prev, name: e.target.value }))}
-                  className="bg-neutral-900 border-neutral-800"
+                  className="bg-neutral-950/50 border-neutral-800 focus:border-emerald-500"
                 />
               </div>
               <div className="grid gap-2">
@@ -171,7 +179,7 @@ export default function StationsPage() {
                 <Input
                   value={selectedStation.address}
                   onChange={(e) => setSelectedStation(prev => ({ ...prev, address: e.target.value }))}
-                  className="bg-neutral-900 border-neutral-800"
+                  className="bg-neutral-950/50 border-neutral-800 focus:border-emerald-500"
                 />
               </div>
 
@@ -181,18 +189,18 @@ export default function StationsPage() {
                   value={selectedStation.ownerId || ""}
                   onChange={(e) => setSelectedStation(prev => ({ ...prev, ownerId: e.target.value }))}
                   placeholder="Например: 662a1c..."
-                  className="bg-neutral-900 border-neutral-800"
+                  className="bg-neutral-950/50 border-neutral-800 focus:border-emerald-500"
                 />
               </div>
             </div>
             <DialogFooter>
-              <Button variant="ghost" onClick={() => setOpenCreate(false)} className="text-neutral-400 hover:bg-neutral-900">
+              <Button variant="ghost" onClick={() => setOpenCreate(false)} className="text-neutral-400 hover:text-white hover:bg-neutral-800">
                 Отмена
               </Button>
               <Button 
                 onClick={handleCreateStation} 
                 disabled={!selectedStation.name || !selectedStation.ownerId || selectedStation.ownerId.length !== 24}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white"
               >
                 Сохранить
               </Button>
@@ -201,9 +209,8 @@ export default function StationsPage() {
         </Dialog>
       </div>
 
-      {/* Edit Dialog */}
       <Dialog open={openEdit} onOpenChange={setOpenEdit}>
-        <DialogContent className="bg-neutral-950 border-neutral-800 text-white sm:max-w-[425px]">
+        <DialogContent className="bg-neutral-900/90 backdrop-blur-xl border-neutral-800 text-white sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Редактировать СТО</DialogTitle>
             <DialogDescription className="text-neutral-400">
@@ -216,7 +223,7 @@ export default function StationsPage() {
               <Input
                 value={selectedStation.name}
                 onChange={(e) => setSelectedStation(prev => ({ ...prev, name: e.target.value }))}
-                className="bg-neutral-900 border-neutral-800"
+                className="bg-neutral-950/50 border-neutral-800 focus:border-emerald-500"
               />
             </div>
             <div className="grid gap-2">
@@ -224,7 +231,7 @@ export default function StationsPage() {
               <Input
                 value={selectedStation.address}
                 onChange={(e) => setSelectedStation(prev => ({ ...prev, address: e.target.value }))}
-                className="bg-neutral-900 border-neutral-800"
+                className="bg-neutral-950/50 border-neutral-800 focus:border-emerald-500"
               />
             </div>
 
@@ -233,18 +240,18 @@ export default function StationsPage() {
               <Input
                 value={selectedStation.ownerId || ""}
                 onChange={(e) => setSelectedStation(prev => ({ ...prev, ownerId: e.target.value }))}
-                className="bg-neutral-900 border-neutral-800"
+                className="bg-neutral-950/50 border-neutral-800 focus:border-emerald-500"
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setOpenEdit(false)} className="text-neutral-400 hover:bg-neutral-900">
+            <Button variant="ghost" onClick={() => setOpenEdit(false)} className="text-neutral-400 hover:text-white hover:bg-neutral-800">
               Отмена
             </Button>
             <Button 
               onClick={handleUpdateStation} 
               disabled={!selectedStation.name || !selectedStation.ownerId || selectedStation.ownerId.length !== 24}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white"
             >
               Сохранить изменения
             </Button>
@@ -253,10 +260,14 @@ export default function StationsPage() {
       </Dialog>
 
       {loading ? (
-        <div className="text-neutral-400">Загрузка филиалов...</div>
+        <div className="flex justify-center p-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
+        </div>
       ) : (
-        <DataTable columns={columns} data={data} searchKey="name" />
+        <div className="bg-neutral-900/40 backdrop-blur-md border border-neutral-800 rounded-2xl overflow-hidden shadow-2xl">
+          <DataTable columns={columns} data={data} searchKey="name" />
+        </div>
       )}
-    </div>
+    </motion.div>
   )
 }

@@ -5,7 +5,7 @@ import { DataTable } from "@/components/ui/data-table/data-table"
 import { Order, OrdersService } from "@/api/orders.service"
 import { Vehicle, VehiclesService } from "@/api/vehicles.service"
 import { UsersService } from "@/api/users.service"
-import { User } from "@/store/user.store"
+import { User, useUserStore } from "@/store/user.store"
 import { ColumnDef } from "@tanstack/react-table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -26,15 +26,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { useUserStore } from "@/store/user.store"
-import { Trash2 } from "lucide-react"
-
-const statusColors: Record<string, string> = {
-  OPEN: "bg-yellow-500/20 text-yellow-500 border-yellow-500/50",
-  IN_PROGRESS: "bg-blue-500/20 text-blue-500 border-blue-500/50",
-  DONE: "bg-green-500/20 text-green-500 border-green-500/50",
-  CLOSED: "bg-neutral-500/20 text-neutral-500 border-neutral-500/50",
-}
+import { Trash2, Plus, ShoppingBag, CalendarClock } from "lucide-react"
+import { motion } from "framer-motion"
 
 export default function OrdersPage() {
   const [data, setData] = useState<Order[]>([])
@@ -59,7 +52,7 @@ export default function OrdersPage() {
       const [ordersRes, vehiclesRes, usersRes] = await Promise.all([
         OrdersService.getOrders(),
         VehiclesService.getVehicles(),
-        UsersService.getUsers(),
+        UsersService.getUsers(), // Fetch all without filtering
       ])
       setData(ordersRes)
       setVehicles(vehiclesRes)
@@ -79,7 +72,7 @@ export default function OrdersPage() {
     try {
       const payload = {
         ...newOrder,
-        serviceId: currentUser?.serviceId || undefined,
+        serviceId: undefined, // Superadmin doesn't need to pass serviceId if it's optional, or we might need a station selector if creating orders from superadmin.
       }
       await OrdersService.createOrder(payload)
       setOpenCreate(false)
@@ -116,17 +109,30 @@ export default function OrdersPage() {
   }
 
   const clients = users.filter(u => u.role === "CLIENT" || u.role === "GUEST")
-  const masters = users.filter(u => u.role === "MASTER" || u.role === "MECHANIC" || u.role === "OWNER")
+  const masters = users.filter(u => u.role === "MECHANIC" || u.role === "OWNER")
 
   const columns: ColumnDef<Order>[] = [
     {
       accessorKey: "_id",
       header: "ID Заказа",
+      cell: ({ row }) => (
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-blue-500/10 rounded-lg">
+            <ShoppingBag className="h-4 w-4 text-blue-400" />
+          </div>
+          <span className="font-medium text-white">#{row.getValue<string>("_id").slice(-6).toUpperCase()}</span>
+        </div>
+      )
     },
     {
       accessorKey: "createdAt",
       header: "Дата",
-      cell: ({ row }) => new Date(row.getValue("createdAt")).toLocaleDateString()
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2 text-neutral-400">
+          <CalendarClock className="h-3 w-3" />
+          {new Date(row.getValue("createdAt")).toLocaleDateString('ru-RU')}
+        </div>
+      )
     },
     {
       accessorKey: "status",
@@ -138,13 +144,18 @@ export default function OrdersPage() {
           <Select
             defaultValue={status}
             onValueChange={(val: string | null) => {
-              if (val) handleStatusChange(orderId!, val)
+              if (val) handleStatusChange(orderId, val)
             }}
           >
-            <SelectTrigger className="w-[140px] h-8 text-xs border-neutral-800 bg-neutral-900/50 text-white">
+            <SelectTrigger className={`w-[140px] h-8 text-xs border-0 font-medium ${
+              status === 'DONE' ? 'bg-emerald-500/10 text-emerald-400' :
+              status === 'OPEN' ? 'bg-blue-500/10 text-blue-400' :
+              status === 'CLOSED' ? 'bg-neutral-500/10 text-neutral-400' :
+              'bg-amber-500/10 text-amber-400'
+            }`}>
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="bg-neutral-950 border-neutral-800 text-white">
+            <SelectContent className="bg-neutral-900/95 backdrop-blur-xl border-neutral-800 text-white">
               <SelectItem value="OPEN">ОТКРЫТ</SelectItem>
               <SelectItem value="IN_PROGRESS">В РАБОТЕ</SelectItem>
               <SelectItem value="DONE">ВЫПОЛНЕН</SelectItem>
@@ -163,19 +174,19 @@ export default function OrdersPage() {
           style: "currency",
           currency: "RUB",
         }).format(amount)
-        return <div className="text-right font-medium text-white">{formatted}</div>
+        return <div className="text-right font-bold text-white tracking-tight">{formatted}</div>
       },
     },
     {
       id: "actions",
-      header: () => <div className="text-center">Действия</div>,
+      header: () => <div className="text-right pr-4">Действия</div>,
       cell: ({ row }) => {
         return (
-          <div className="flex justify-center items-center">
+          <div className="flex justify-end items-center gap-2 pr-4">
             <Button
               variant="ghost"
               size="icon"
-              className="text-red-500 hover:text-red-400 hover:bg-red-500/10"
+              className="text-red-400 hover:text-red-300 hover:bg-red-500/20 transition-colors"
               onClick={() => handleDeleteOrder(row.original._id)}
             >
               <Trash2 className="h-4 w-4" />
@@ -187,16 +198,25 @@ export default function OrdersPage() {
   ]
 
   return (
-    <div className="space-y-6">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-6"
+    >
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-3xl font-bold tracking-tight text-white">Наряды-заказы</h2>
-          <p className="text-neutral-400">Управление всеми работами и клиентами.</p>
+          <p className="text-neutral-400 mt-1">Управление всеми работами и клиентами.</p>
         </div>
         
         <Dialog open={openCreate} onOpenChange={setOpenCreate}>
-          <DialogTrigger render={<Button className="bg-blue-600 hover:bg-blue-700 text-white">Создать заказ</Button>} />
-          <DialogContent className="bg-neutral-950 border-neutral-800 text-white sm:max-w-[425px]">
+          <DialogTrigger render={
+            <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20 border-0">
+              <Plus className="h-4 w-4 mr-2" />
+              Создать заказ
+            </Button>
+          } />
+          <DialogContent className="bg-neutral-900/90 backdrop-blur-xl border-neutral-800 text-white sm:max-w-[425px]">
             <DialogHeader>
               <DialogTitle>Создание наряда-заказа</DialogTitle>
               <DialogDescription className="text-neutral-400">
@@ -212,10 +232,10 @@ export default function OrdersPage() {
                     if (val) setNewOrder(prev => ({ ...prev, vehicleId: val }))
                   }}
                 >
-                  <SelectTrigger className="bg-neutral-900 border-neutral-800">
+                  <SelectTrigger className="bg-neutral-950/50 border-neutral-800 focus:border-blue-500">
                     <SelectValue placeholder="Выберите автомобиль" />
                   </SelectTrigger>
-                  <SelectContent className="bg-neutral-950 border-neutral-800 text-white">
+                  <SelectContent className="bg-neutral-900/95 backdrop-blur-xl border-neutral-800 text-white">
                     {vehicles.map((v) => (
                       <SelectItem key={v._id} value={v._id}>
                         {v.brand} {v.model} ({v.licensePlate})
@@ -233,10 +253,10 @@ export default function OrdersPage() {
                     if (val) setNewOrder(prev => ({ ...prev, clientId: val }))
                   }}
                 >
-                  <SelectTrigger className="bg-neutral-900 border-neutral-800">
+                  <SelectTrigger className="bg-neutral-950/50 border-neutral-800 focus:border-blue-500">
                     <SelectValue placeholder="Выберите клиента" />
                   </SelectTrigger>
-                  <SelectContent className="bg-neutral-950 border-neutral-800 text-white">
+                  <SelectContent className="bg-neutral-900/95 backdrop-blur-xl border-neutral-800 text-white">
                     {clients.map((c) => (
                       <SelectItem key={c._id} value={c._id}>
                         {c.fullName}
@@ -254,10 +274,10 @@ export default function OrdersPage() {
                     if (val) setNewOrder(prev => ({ ...prev, masterId: val }))
                   }}
                 >
-                  <SelectTrigger className="bg-neutral-900 border-neutral-800">
+                  <SelectTrigger className="bg-neutral-950/50 border-neutral-800 focus:border-blue-500">
                     <SelectValue placeholder="Выберите мастера" />
                   </SelectTrigger>
-                  <SelectContent className="bg-neutral-950 border-neutral-800 text-white">
+                  <SelectContent className="bg-neutral-900/95 backdrop-blur-xl border-neutral-800 text-white">
                     {masters.map((m) => (
                       <SelectItem key={m._id} value={m._id}>
                         {m.fullName}
@@ -273,12 +293,12 @@ export default function OrdersPage() {
                   type="number"
                   value={newOrder.totalAmount}
                   onChange={(e) => setNewOrder(prev => ({ ...prev, totalAmount: parseFloat(e.target.value) }))}
-                  className="bg-neutral-900 border-neutral-800"
+                  className="bg-neutral-950/50 border-neutral-800 focus:border-blue-500"
                 />
               </div>
             </div>
             <DialogFooter>
-              <Button variant="ghost" onClick={() => setOpenCreate(false)} className="text-neutral-400 hover:bg-neutral-900">
+              <Button variant="ghost" onClick={() => setOpenCreate(false)} className="text-neutral-400 hover:text-white hover:bg-neutral-800">
                 Отмена
               </Button>
               <Button 
@@ -294,10 +314,14 @@ export default function OrdersPage() {
       </div>
 
       {loading ? (
-        <div className="text-neutral-400">Загрузка нарядов-заказов...</div>
+        <div className="flex justify-center p-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        </div>
       ) : (
-        <DataTable columns={columns} data={data} searchKey="_id" />
+        <div className="bg-neutral-900/40 backdrop-blur-md border border-neutral-800 rounded-2xl overflow-hidden shadow-2xl">
+          <DataTable columns={columns} data={data} searchKey="_id" />
+        </div>
       )}
-    </div>
+    </motion.div>
   )
 }

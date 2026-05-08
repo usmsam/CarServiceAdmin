@@ -3,19 +3,20 @@
 import { useEffect, useState } from "react"
 import { DataTable } from "@/components/ui/data-table/data-table"
 import { UsersService } from "@/api/users.service"
-import { User, useUserStore } from "@/store/user.store"
+import { User } from "@/store/user.store"
 import { ColumnDef } from "@tanstack/react-table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { motion } from "framer-motion"
+import { UserCircle2, ShieldCheck, User as UserIcon } from "lucide-react"
 
 export default function UsersPage() {
   const [data, setData] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
-  const { user: currentUser, activeServiceId } = useUserStore()
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const users = await UsersService.getUsers(activeServiceId || undefined)
+        const users = await UsersService.getUsers(undefined) // Fetch all for superadmin
         setData(users)
       } catch (error) {
         console.error("Не удалось загрузить пользователей", error)
@@ -25,7 +26,7 @@ export default function UsersPage() {
       }
     }
     fetchData()
-  }, [currentUser, activeServiceId])
+  }, [])
 
   const handleRoleChange = async (userId: string, newRole: string) => {
     setData(prev => prev.map(u => u._id === userId ? { ...u, role: newRole as any } : u))
@@ -40,26 +41,31 @@ export default function UsersPage() {
     {
       accessorKey: "_id",
       header: "ID",
+      cell: ({ row }) => <div className="text-xs font-mono text-neutral-500">{row.getValue<string>("_id").slice(-8)}</div>
     },
     {
       accessorKey: "fullName",
       header: "ФИО",
+      cell: ({ row }) => (
+        <div className="flex items-center gap-3">
+          <div className="h-8 w-8 rounded-full bg-orange-500/10 flex items-center justify-center border border-orange-500/20">
+            <UserCircle2 className="h-5 w-5 text-orange-400" />
+          </div>
+          <span className="font-medium text-white">{row.getValue("fullName")}</span>
+        </div>
+      )
     },
     {
       accessorKey: "telegramId",
       header: "Telegram ID",
+      cell: ({ row }) => <div className="text-neutral-400">{row.getValue("telegramId")}</div>
     },
     {
       accessorKey: "role",
       header: "Роль",
       cell: ({ row }) => {
         const user = row.original
-        const canEdit = currentUser?.role === 'SUPERADMIN' || currentUser?.role === 'OWNER'
-
-        if (!canEdit) {
-          return <span>{user.role}</span>
-        }
-
+        
         return (
           <Select
             defaultValue={user.role}
@@ -67,15 +73,27 @@ export default function UsersPage() {
               if (val) handleRoleChange(user._id, val)
             }}
           >
-            <SelectTrigger className="w-[160px] h-8 text-xs border-neutral-800 bg-neutral-900/50 text-white">
+            <SelectTrigger className={`w-[160px] h-8 text-xs border-0 font-medium ${
+              user.role === 'SUPERADMIN' ? 'bg-red-500/10 text-red-400' :
+              user.role === 'OWNER' ? 'bg-purple-500/10 text-purple-400' :
+              user.role === 'CLIENT' ? 'bg-blue-500/10 text-blue-400' :
+              'bg-emerald-500/10 text-emerald-400'
+            }`}>
               <SelectValue placeholder="Выберите роль" />
             </SelectTrigger>
-            <SelectContent className="bg-neutral-950 border-neutral-800 text-white">
-              <SelectItem value="SUPERADMIN">Суперадмин</SelectItem>
-              <SelectItem value="OWNER">Владелец СТО</SelectItem>
-              <SelectItem value="MANAGER">Менеджер</SelectItem>
-              <SelectItem value="MASTER">Мастер</SelectItem>
-              <SelectItem value="CLIENT">Клиент</SelectItem>
+            <SelectContent className="bg-neutral-900/95 backdrop-blur-xl border-neutral-800 text-white">
+              <SelectItem value="SUPERADMIN">
+                <div className="flex items-center gap-2"><ShieldCheck className="w-4 h-4 text-red-400"/> Суперадмин</div>
+              </SelectItem>
+              <SelectItem value="OWNER">
+                <div className="flex items-center gap-2"><UserIcon className="w-4 h-4 text-purple-400"/> Владелец СТО</div>
+              </SelectItem>
+              <SelectItem value="MECHANIC">
+                <div className="flex items-center gap-2"><UserIcon className="w-4 h-4 text-emerald-400"/> Механик</div>
+              </SelectItem>
+              <SelectItem value="CLIENT">
+                <div className="flex items-center gap-2"><UserIcon className="w-4 h-4 text-blue-400"/> Клиент</div>
+              </SelectItem>
             </SelectContent>
           </Select>
         )
@@ -84,17 +102,25 @@ export default function UsersPage() {
   ]
 
   return (
-    <div className="space-y-6">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-6"
+    >
       <div>
         <h2 className="text-3xl font-bold tracking-tight text-white">Управление пользователями</h2>
-        <p className="text-neutral-400">Назначение ролей сотрудникам и ведение базы клиентов.</p>
+        <p className="text-neutral-400 mt-1">Назначение ролей сотрудникам и ведение базы клиентов.</p>
       </div>
 
       {loading ? (
-        <div className="text-neutral-400">Загрузка пользователей...</div>
+        <div className="flex justify-center p-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+        </div>
       ) : (
-        <DataTable columns={columns} data={data} searchKey="fullName" />
+        <div className="bg-neutral-900/40 backdrop-blur-md border border-neutral-800 rounded-2xl overflow-hidden shadow-2xl">
+          <DataTable columns={columns} data={data} searchKey="fullName" />
+        </div>
       )}
-    </div>
+    </motion.div>
   )
 }
