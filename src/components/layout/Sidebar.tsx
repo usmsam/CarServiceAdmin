@@ -26,7 +26,7 @@ export function Sidebar() {
       label: "Автомобили",
       icon: Car,
       href: "/vehicles",
-      show: true,
+      show: user?.role === 'SUPERADMIN',
     },
     {
       label: "Пользователи",
@@ -50,7 +50,7 @@ export function Sidebar() {
       label: "Филиалы СТО",
       icon: Store,
       href: "/stations",
-      show: true,
+      show: user?.role === 'SUPERADMIN',
     },
     {
       label: "Настройки",

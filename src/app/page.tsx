@@ -7,6 +7,7 @@ import { OrdersService, Order } from "@/api/orders.service"
 import { VehiclesService } from "@/api/vehicles.service"
 import { UsersService } from "@/api/users.service"
 import { motion } from "framer-motion"
+import { useUserStore } from "@/store/user.store"
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -24,6 +25,7 @@ const itemVariants = {
 }
 
 export default function DashboardPage() {
+  const { user } = useUserStore()
   const [orders, setOrders] = useState<Order[]>([])
   const [vehiclesCount, setVehiclesCount] = useState(0)
   const [mastersCount, setMastersCount] = useState(0)
@@ -93,7 +95,12 @@ export default function DashboardPage() {
       color: "text-orange-400",
       bg: "bg-orange-400/10",
     },
-  ]
+  ].filter(stat => {
+    if (stat.title === "Автомобилей в базе") {
+      return user?.role === 'SUPERADMIN'
+    }
+    return true
+  })
 
   // Get 5 most recent orders
   const recentOrders = [...orders]
@@ -120,7 +127,11 @@ export default function DashboardPage() {
           <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-600 bg-clip-text text-transparent">
             Панель управления
           </h2>
-          <p className="text-slate-500 mt-1">Сводка данных по всем филиалам платформы.</p>
+          <p className="text-slate-500 mt-1">
+            {user?.role === 'SUPERADMIN' 
+              ? "Сводка данных по всем филиалам платформы." 
+              : "Сводка данных по вашему автосервису."}
+          </p>
         </div>
       </div>
       
