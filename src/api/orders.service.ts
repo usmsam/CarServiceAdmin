@@ -41,5 +41,9 @@ export const OrdersService = {
   getStats: async (): Promise<any> => {
     const { data } = await api.get('/orders/stats/owner');
     return data;
+  },
+  getGlobalStats: async (): Promise<any> => {
+    const { data } = await api.get('/orders/stats/admin');
+    return data;
   }
 };
