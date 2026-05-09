@@ -117,22 +117,22 @@ export default function DashboardPage() {
     >
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-white to-neutral-400 bg-clip-text text-transparent">
+          <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-600 bg-clip-text text-transparent">
             Панель управления
           </h2>
-          <p className="text-neutral-400 mt-1">Сводка данных по всем филиалам платформы.</p>
+          <p className="text-slate-500 mt-1">Сводка данных по всем филиалам платформы.</p>
         </div>
       </div>
       
       <motion.div variants={itemVariants} className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat, i) => (
-          <div key={i} className="group relative overflow-hidden rounded-2xl bg-neutral-900/40 border border-neutral-800/50 backdrop-blur-md transition-all duration-300 hover:bg-neutral-900/60 hover:shadow-2xl hover:shadow-blue-900/20 hover:-translate-y-1">
-            <div className={`absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity duration-500 ${stat.color}`}>
+          <div key={i} className="group relative overflow-hidden rounded-2xl bg-white border border-slate-200 transition-all duration-300 hover:shadow-xl hover:shadow-slate-200/50 hover:-translate-y-1">
+            <div className={`absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity duration-500 ${stat.color}`}>
               <stat.icon className="h-24 w-24 -mr-8 -mt-8" />
             </div>
             <div className="p-6 relative z-10">
               <div className="flex items-center justify-between mb-4">
-                <p className="text-sm font-medium text-neutral-400">
+                <p className="text-sm font-medium text-slate-500">
                   {stat.title}
                 </p>
                 <div className={`p-2 rounded-xl ${stat.bg}`}>
@@ -140,10 +140,10 @@ export default function DashboardPage() {
                 </div>
               </div>
               <div>
-                <div className="text-3xl font-bold text-white tracking-tight">
+                <div className="text-3xl font-bold text-slate-900 tracking-tight">
                   {stat.value}
                 </div>
-                <p className="text-xs text-neutral-500 mt-2 flex items-center gap-1">
+                <p className="text-xs text-slate-500 mt-2 flex items-center gap-1">
                   <TrendingUp className="h-3 w-3 text-emerald-500" />
                   {stat.description}
                 </p>
@@ -154,30 +154,30 @@ export default function DashboardPage() {
       </motion.div>
       
       <motion.div variants={itemVariants} className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="col-span-7 bg-neutral-900/40 border-neutral-800/50 backdrop-blur-md rounded-2xl overflow-hidden shadow-2xl">
-          <CardHeader className="border-b border-neutral-800/50 pb-4 bg-neutral-900/30">
-            <CardTitle className="text-white text-lg font-medium">Последние заказы</CardTitle>
+        <Card className="col-span-7 bg-white border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+          <CardHeader className="border-b border-slate-100 pb-4 bg-slate-50/50">
+            <CardTitle className="text-slate-900 text-lg font-medium">Последние заказы</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             {recentOrders.length === 0 ? (
-              <div className="p-8 text-center text-neutral-500">Заказов пока нет</div>
+              <div className="p-8 text-center text-slate-500">Заказов пока нет</div>
             ) : (
-              <div className="divide-y divide-neutral-800/50">
+              <div className="divide-y divide-slate-100">
                 {recentOrders.map((order, i) => (
                   <motion.div 
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.1 }}
                     key={order._id} 
-                    className="p-5 flex items-center justify-between hover:bg-neutral-800/30 transition-colors group"
+                    className="p-5 flex items-center justify-between hover:bg-slate-50 transition-colors group"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="h-10 w-10 rounded-full bg-blue-500/10 flex items-center justify-center border border-blue-500/20 group-hover:bg-blue-500/20 transition-colors">
-                        <ShoppingBag className="h-5 w-5 text-blue-400" />
+                      <div className="h-10 w-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100 group-hover:bg-blue-100 transition-colors">
+                        <ShoppingBag className="h-5 w-5" />
                       </div>
                       <div>
-                        <div className="font-semibold text-white">Заказ #{order._id.slice(-6).toUpperCase()}</div>
-                        <div className="text-sm text-neutral-400 mt-0.5">
+                        <div className="font-semibold text-slate-900">Заказ #{order._id.slice(-6).toUpperCase()}</div>
+                        <div className="text-sm text-slate-500 mt-0.5">
                           {new Date(order.createdAt || "").toLocaleDateString('ru-RU', { 
                             day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' 
                           })}
@@ -186,13 +186,13 @@ export default function DashboardPage() {
                     </div>
                     <div className="flex items-center gap-6">
                       <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${
-                        order.status === 'DONE' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-                        order.status === 'OPEN' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
-                        'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                        order.status === 'DONE' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' :
+                        order.status === 'OPEN' ? 'bg-blue-50 text-blue-600 border-blue-200' :
+                        'bg-amber-50 text-amber-600 border-amber-200'
                       }`}>
                         {order.status}
                       </span>
-                      <div className="text-lg font-bold text-white tabular-nums">
+                      <div className="text-lg font-bold text-slate-900 tabular-nums">
                         {new Intl.NumberFormat("ru-RU", { style: "currency", currency: "RUB" }).format(order.totalAmount)}
                       </div>
                     </div>

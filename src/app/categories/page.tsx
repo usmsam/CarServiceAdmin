@@ -92,14 +92,27 @@ export default function CategoriesPage() {
           <div className="p-2 bg-indigo-500/10 rounded-lg">
             <Layers className="h-4 w-4 text-indigo-400" />
           </div>
-          <span className="font-medium text-white">{row.getValue("name")}</span>
+          <span className="font-medium text-slate-900">{row.getValue("name")}</span>
         </div>
       ),
     },
     {
       accessorKey: "order",
       header: "Порядок",
-      cell: ({ row }) => <div className="text-neutral-400">{row.getValue("order")}</div>,
+      cell: ({ row }) => <div className="text-slate-500">{row.getValue("order")}</div>,
+    },
+    {
+      id: "station",
+      header: "СТО",
+      cell: ({ row }) => {
+        const station = row.original.serviceId as any;
+        return (
+          <div className="flex flex-col">
+            <span className="font-medium text-slate-900">{station?.name || 'Общая'}</span>
+            <span className="text-xs text-slate-500">{station?.address || ''}</span>
+          </div>
+        )
+      }
     },
     {
       id: "actions",
@@ -140,21 +153,21 @@ export default function CategoriesPage() {
     >
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-white">Категории услуг</h2>
-          <p className="text-neutral-400 mt-1">Управление категориями для группировки услуг.</p>
+          <h2 className="text-3xl font-bold tracking-tight text-slate-900">Категории услуг</h2>
+          <p className="text-slate-500 mt-1">Управление категориями для группировки услуг.</p>
         </div>
         
         <Dialog open={openCreate} onOpenChange={setOpenCreate}>
           <DialogTrigger render={
-            <Button className="bg-purple-600 hover:bg-purple-700 text-white shadow-lg shadow-purple-500/20 border-0">
+            <Button className="bg-purple-600 hover:bg-purple-700 text-slate-900 shadow-lg shadow-purple-500/20 border-0">
               <Plus className="h-4 w-4 mr-2" />
               Добавить категорию
             </Button>
           } />
-          <DialogContent className="bg-neutral-900/90 backdrop-blur-xl border-neutral-800 text-white sm:max-w-[425px]">
+          <DialogContent className="bg-white backdrop-blur-xl border-slate-200 text-slate-900 sm:max-w-[425px]">
             <DialogHeader>
               <DialogTitle>Новая категория</DialogTitle>
-              <DialogDescription className="text-neutral-400">
+              <DialogDescription className="text-slate-500">
                 Введите название и порядок сортировки для новой категории.
               </DialogDescription>
             </DialogHeader>
@@ -164,7 +177,7 @@ export default function CategoriesPage() {
                 <Input
                   value={selectedCategory.name}
                   onChange={(e) => setSelectedCategory(prev => ({ ...prev, name: e.target.value }))}
-                  className="bg-neutral-950/50 border-neutral-800 focus:border-blue-500"
+                  className="bg-slate-50 border-slate-200 focus:border-blue-500"
                   placeholder="Например: Шиномонтаж"
                 />
               </div>
@@ -174,18 +187,18 @@ export default function CategoriesPage() {
                   type="number"
                   value={selectedCategory.order}
                   onChange={(e) => setSelectedCategory(prev => ({ ...prev, order: Number(e.target.value) }))}
-                  className="bg-neutral-950/50 border-neutral-800 focus:border-blue-500"
+                  className="bg-slate-50 border-slate-200 focus:border-blue-500"
                 />
               </div>
             </div>
             <DialogFooter>
-              <Button variant="ghost" onClick={() => setOpenCreate(false)} className="text-neutral-400 hover:text-white hover:bg-neutral-800">
+              <Button variant="ghost" onClick={() => setOpenCreate(false)} className="text-slate-500 hover:text-slate-900 hover:bg-slate-100">
                 Отмена
               </Button>
               <Button 
                 onClick={handleCreateCategory} 
                 disabled={!selectedCategory.name}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
+                className="bg-blue-600 hover:bg-blue-700 text-slate-900"
               >
                 Сохранить
               </Button>
@@ -195,10 +208,10 @@ export default function CategoriesPage() {
       </div>
 
       <Dialog open={openEdit} onOpenChange={setOpenEdit}>
-        <DialogContent className="bg-neutral-900/90 backdrop-blur-xl border-neutral-800 text-white sm:max-w-[425px]">
+        <DialogContent className="bg-white backdrop-blur-xl border-slate-200 text-slate-900 sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Редактировать категорию</DialogTitle>
-            <DialogDescription className="text-neutral-400">
+            <DialogDescription className="text-slate-500">
               Внесите изменения в категорию услуг.
             </DialogDescription>
           </DialogHeader>
@@ -208,7 +221,7 @@ export default function CategoriesPage() {
               <Input
                 value={selectedCategory.name}
                 onChange={(e) => setSelectedCategory(prev => ({ ...prev, name: e.target.value }))}
-                className="bg-neutral-950/50 border-neutral-800 focus:border-blue-500"
+                className="bg-slate-50 border-slate-200 focus:border-blue-500"
               />
             </div>
             <div className="grid gap-2">
@@ -217,18 +230,18 @@ export default function CategoriesPage() {
                 type="number"
                 value={selectedCategory.order}
                 onChange={(e) => setSelectedCategory(prev => ({ ...prev, order: Number(e.target.value) }))}
-                className="bg-neutral-950/50 border-neutral-800 focus:border-blue-500"
+                className="bg-slate-50 border-slate-200 focus:border-blue-500"
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setOpenEdit(false)} className="text-neutral-400 hover:text-white hover:bg-neutral-800">
+            <Button variant="ghost" onClick={() => setOpenEdit(false)} className="text-slate-500 hover:text-slate-900 hover:bg-slate-100">
               Отмена
             </Button>
             <Button 
               onClick={handleUpdateCategory} 
               disabled={!selectedCategory.name}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+              className="bg-blue-600 hover:bg-blue-700 text-slate-900"
             >
               Сохранить изменения
             </Button>
@@ -241,7 +254,7 @@ export default function CategoriesPage() {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
         </div>
       ) : (
-        <div className="bg-neutral-900/40 backdrop-blur-md border border-neutral-800 rounded-2xl overflow-hidden shadow-2xl">
+        <div className="w-full">
           <DataTable columns={columns} data={data} searchKey="name" />
         </div>
       )}

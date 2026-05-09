@@ -94,7 +94,7 @@ export default function StationsPage() {
           <div className="p-2 bg-emerald-500/10 rounded-lg">
             <Store className="h-4 w-4 text-emerald-400" />
           </div>
-          <span className="font-medium text-white">{row.getValue("name")}</span>
+          <span className="font-medium text-slate-900">{row.getValue("name")}</span>
         </div>
       ),
     },
@@ -102,7 +102,7 @@ export default function StationsPage() {
       accessorKey: "address",
       header: "Адрес",
       cell: ({ row }) => (
-        <div className="flex items-center gap-2 text-neutral-400">
+        <div className="flex items-center gap-2 text-slate-500">
           <MapPin className="h-3 w-3" />
           {row.getValue("address") || "Не указан"}
         </div>
@@ -147,21 +147,21 @@ export default function StationsPage() {
     >
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-white">Филиалы СТО</h2>
-          <p className="text-neutral-400 mt-1">Управление филиалами и локациями автосервисов.</p>
+          <h2 className="text-3xl font-bold tracking-tight text-slate-900">Филиалы СТО</h2>
+          <p className="text-slate-500 mt-1">Управление филиалами и локациями автосервисов.</p>
         </div>
         
         <Dialog open={openCreate} onOpenChange={setOpenCreate}>
           <DialogTrigger render={
-            <Button className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-500/20 border-0">
+            <Button className="bg-emerald-600 hover:bg-emerald-700 text-slate-900 shadow-lg shadow-emerald-500/20 border-0">
               <Plus className="h-4 w-4 mr-2" />
               Добавить СТО
             </Button>
           } />
-          <DialogContent className="bg-neutral-900/90 backdrop-blur-xl border-neutral-800 text-white sm:max-w-[425px]">
+          <DialogContent className="bg-white backdrop-blur-xl border-slate-200 text-slate-900 sm:max-w-[425px]">
             <DialogHeader>
               <DialogTitle>Добавить новое СТО</DialogTitle>
-              <DialogDescription className="text-neutral-400">
+              <DialogDescription className="text-slate-500">
                 Введите параметры новой локации автосервиса.
               </DialogDescription>
             </DialogHeader>
@@ -171,7 +171,7 @@ export default function StationsPage() {
                 <Input
                   value={selectedStation.name}
                   onChange={(e) => setSelectedStation(prev => ({ ...prev, name: e.target.value }))}
-                  className="bg-neutral-950/50 border-neutral-800 focus:border-emerald-500"
+                  className="bg-slate-50 border-slate-200 focus:border-emerald-500"
                 />
               </div>
               <div className="grid gap-2">
@@ -179,7 +179,7 @@ export default function StationsPage() {
                 <Input
                   value={selectedStation.address}
                   onChange={(e) => setSelectedStation(prev => ({ ...prev, address: e.target.value }))}
-                  className="bg-neutral-950/50 border-neutral-800 focus:border-emerald-500"
+                  className="bg-slate-50 border-slate-200 focus:border-emerald-500"
                 />
               </div>
 
@@ -189,18 +189,18 @@ export default function StationsPage() {
                   value={selectedStation.ownerId || ""}
                   onChange={(e) => setSelectedStation(prev => ({ ...prev, ownerId: e.target.value }))}
                   placeholder="Например: 662a1c..."
-                  className="bg-neutral-950/50 border-neutral-800 focus:border-emerald-500"
+                  className="bg-slate-50 border-slate-200 focus:border-emerald-500"
                 />
               </div>
             </div>
             <DialogFooter>
-              <Button variant="ghost" onClick={() => setOpenCreate(false)} className="text-neutral-400 hover:text-white hover:bg-neutral-800">
+              <Button variant="ghost" onClick={() => setOpenCreate(false)} className="text-slate-500 hover:text-slate-900 hover:bg-slate-100">
                 Отмена
               </Button>
               <Button 
                 onClick={handleCreateStation} 
                 disabled={!selectedStation.name || !selectedStation.ownerId || selectedStation.ownerId.length !== 24}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                className="bg-emerald-600 hover:bg-emerald-700 text-slate-900"
               >
                 Сохранить
               </Button>
@@ -210,10 +210,10 @@ export default function StationsPage() {
       </div>
 
       <Dialog open={openEdit} onOpenChange={setOpenEdit}>
-        <DialogContent className="bg-neutral-900/90 backdrop-blur-xl border-neutral-800 text-white sm:max-w-[425px]">
+        <DialogContent className="bg-white backdrop-blur-xl border-slate-200 text-slate-900 sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Редактировать СТО</DialogTitle>
-            <DialogDescription className="text-neutral-400">
+            <DialogDescription className="text-slate-500">
               Внесите изменения в реквизиты СТО.
             </DialogDescription>
           </DialogHeader>
@@ -223,7 +223,7 @@ export default function StationsPage() {
               <Input
                 value={selectedStation.name}
                 onChange={(e) => setSelectedStation(prev => ({ ...prev, name: e.target.value }))}
-                className="bg-neutral-950/50 border-neutral-800 focus:border-emerald-500"
+                className="bg-slate-50 border-slate-200 focus:border-emerald-500"
               />
             </div>
             <div className="grid gap-2">
@@ -231,7 +231,7 @@ export default function StationsPage() {
               <Input
                 value={selectedStation.address}
                 onChange={(e) => setSelectedStation(prev => ({ ...prev, address: e.target.value }))}
-                className="bg-neutral-950/50 border-neutral-800 focus:border-emerald-500"
+                className="bg-slate-50 border-slate-200 focus:border-emerald-500"
               />
             </div>
 
@@ -240,18 +240,18 @@ export default function StationsPage() {
               <Input
                 value={selectedStation.ownerId || ""}
                 onChange={(e) => setSelectedStation(prev => ({ ...prev, ownerId: e.target.value }))}
-                className="bg-neutral-950/50 border-neutral-800 focus:border-emerald-500"
+                className="bg-slate-50 border-slate-200 focus:border-emerald-500"
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setOpenEdit(false)} className="text-neutral-400 hover:text-white hover:bg-neutral-800">
+            <Button variant="ghost" onClick={() => setOpenEdit(false)} className="text-slate-500 hover:text-slate-900 hover:bg-slate-100">
               Отмена
             </Button>
             <Button 
               onClick={handleUpdateStation} 
               disabled={!selectedStation.name || !selectedStation.ownerId || selectedStation.ownerId.length !== 24}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+              className="bg-emerald-600 hover:bg-emerald-700 text-slate-900"
             >
               Сохранить изменения
             </Button>
@@ -264,7 +264,7 @@ export default function StationsPage() {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
         </div>
       ) : (
-        <div className="bg-neutral-900/40 backdrop-blur-md border border-neutral-800 rounded-2xl overflow-hidden shadow-2xl">
+        <div className="w-full">
           <DataTable columns={columns} data={data} searchKey="name" />
         </div>
       )}

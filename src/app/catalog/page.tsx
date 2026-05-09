@@ -111,7 +111,7 @@ export default function CatalogPage() {
           <div className="p-2 bg-rose-500/10 rounded-lg">
             <Wrench className="h-4 w-4 text-rose-400" />
           </div>
-          <span className="font-medium text-white">{row.getValue("title")}</span>
+          <span className="font-medium text-slate-900">{row.getValue("title")}</span>
         </div>
       ),
     },
@@ -121,12 +121,25 @@ export default function CatalogPage() {
       cell: ({ row }) => {
         const cat = row.getValue("categoryId") as any
         return (
-          <div className="flex items-center gap-2 text-neutral-400">
+          <div className="flex items-center gap-2 text-slate-500">
             <Layers className="h-3 w-3" />
             {cat?.name || cat || "Без категории"}
           </div>
         )
       },
+    },
+    {
+      id: "station",
+      header: "СТО",
+      cell: ({ row }) => {
+        const station = row.original.serviceId as any;
+        return (
+          <div className="flex flex-col">
+            <span className="font-medium text-slate-900">{station?.name || 'Общая'}</span>
+            <span className="text-xs text-slate-500">{station?.address || ''}</span>
+          </div>
+        )
+      }
     },
     {
       id: "actions",
@@ -167,21 +180,21 @@ export default function CatalogPage() {
     >
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-white">Справочник работ</h2>
-          <p className="text-neutral-400 mt-1">Единый глобальный реестр услуг для всех СТО.</p>
+          <h2 className="text-3xl font-bold tracking-tight text-slate-900">Справочник работ</h2>
+          <p className="text-slate-500 mt-1">Единый глобальный реестр услуг для всех СТО.</p>
         </div>
         
         <Dialog open={openCreate} onOpenChange={setOpenCreate}>
           <DialogTrigger render={
-            <Button className="bg-rose-600 hover:bg-rose-700 text-white shadow-lg shadow-rose-500/20 border-0">
+            <Button className="bg-rose-600 hover:bg-rose-700 text-slate-900 shadow-lg shadow-rose-500/20 border-0">
               <Plus className="h-4 w-4 mr-2" />
               Добавить работу
             </Button>
           } />
-          <DialogContent className="bg-neutral-900/90 backdrop-blur-xl border-neutral-800 text-white sm:max-w-[425px]">
+          <DialogContent className="bg-white backdrop-blur-xl border-slate-200 text-slate-900 sm:max-w-[425px]">
             <DialogHeader>
               <DialogTitle>Добавить новую работу</DialogTitle>
-              <DialogDescription className="text-neutral-400">
+              <DialogDescription className="text-slate-500">
                 Введите наименование оказываемой услуги.
               </DialogDescription>
             </DialogHeader>
@@ -191,7 +204,7 @@ export default function CatalogPage() {
                 <Input
                   value={selectedItem.title}
                   onChange={(e) => setSelectedItem(prev => ({ ...prev, title: e.target.value }))}
-                  className="bg-neutral-950/50 border-neutral-800 focus:border-rose-500"
+                  className="bg-slate-50 border-slate-200 focus:border-rose-500"
                 />
               </div>
               <div className="grid gap-2">
@@ -202,10 +215,10 @@ export default function CatalogPage() {
                     setSelectedItem(prev => ({ ...prev, categoryId: val === "none" ? undefined : val }))
                   }}
                 >
-                  <SelectTrigger className="bg-neutral-950/50 border-neutral-800 focus:border-rose-500">
+                  <SelectTrigger className="bg-slate-50 border-slate-200 focus:border-rose-500">
                     <SelectValue placeholder="Выберите категорию" />
                   </SelectTrigger>
-                  <SelectContent className="bg-neutral-900/95 backdrop-blur-xl border-neutral-800 text-white">
+                  <SelectContent className="bg-white backdrop-blur-xl border-slate-200 text-slate-900">
                     <SelectItem value="none">Без категории</SelectItem>
                     {categories.map((cat) => (
                       <SelectItem key={cat._id} value={cat._id}>
@@ -217,13 +230,13 @@ export default function CatalogPage() {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="ghost" onClick={() => setOpenCreate(false)} className="text-neutral-400 hover:text-white hover:bg-neutral-800">
+              <Button variant="ghost" onClick={() => setOpenCreate(false)} className="text-slate-500 hover:text-slate-900 hover:bg-slate-100">
                 Отмена
               </Button>
               <Button 
                 onClick={handleCreateItem} 
                 disabled={!selectedItem.title}
-                className="bg-rose-600 hover:bg-rose-700 text-white"
+                className="bg-rose-600 hover:bg-rose-700 text-slate-900"
               >
                 Сохранить
               </Button>
@@ -233,10 +246,10 @@ export default function CatalogPage() {
       </div>
 
       <Dialog open={openEdit} onOpenChange={setOpenEdit}>
-        <DialogContent className="bg-neutral-900/90 backdrop-blur-xl border-neutral-800 text-white sm:max-w-[425px]">
+        <DialogContent className="bg-white backdrop-blur-xl border-slate-200 text-slate-900 sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Изменить услугу</DialogTitle>
-            <DialogDescription className="text-neutral-400">
+            <DialogDescription className="text-slate-500">
               Внесите изменения в параметры работы.
             </DialogDescription>
           </DialogHeader>
@@ -246,7 +259,7 @@ export default function CatalogPage() {
               <Input
                 value={selectedItem.title}
                 onChange={(e) => setSelectedItem(prev => ({ ...prev, title: e.target.value }))}
-                className="bg-neutral-950/50 border-neutral-800 focus:border-rose-500"
+                className="bg-slate-50 border-slate-200 focus:border-rose-500"
               />
             </div>
             <div className="grid gap-2">
@@ -257,10 +270,10 @@ export default function CatalogPage() {
                   setSelectedItem(prev => ({ ...prev, categoryId: val === "none" ? undefined : val }))
                 }}
               >
-                <SelectTrigger className="bg-neutral-950/50 border-neutral-800 focus:border-rose-500">
+                <SelectTrigger className="bg-slate-50 border-slate-200 focus:border-rose-500">
                   <SelectValue placeholder="Выберите категорию" />
                 </SelectTrigger>
-                <SelectContent className="bg-neutral-900/95 backdrop-blur-xl border-neutral-800 text-white">
+                <SelectContent className="bg-white backdrop-blur-xl border-slate-200 text-slate-900">
                   <SelectItem value="none">Без категории</SelectItem>
                   {categories.map((cat) => (
                     <SelectItem key={cat._id} value={cat._id}>
@@ -272,13 +285,13 @@ export default function CatalogPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setOpenEdit(false)} className="text-neutral-400 hover:text-white hover:bg-neutral-800">
+            <Button variant="ghost" onClick={() => setOpenEdit(false)} className="text-slate-500 hover:text-slate-900 hover:bg-slate-100">
               Отмена
             </Button>
             <Button 
               onClick={handleUpdateItem} 
               disabled={!selectedItem.title}
-              className="bg-rose-600 hover:bg-rose-700 text-white"
+              className="bg-rose-600 hover:bg-rose-700 text-slate-900"
             >
               Сохранить изменения
             </Button>
@@ -291,7 +304,7 @@ export default function CatalogPage() {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-rose-500"></div>
         </div>
       ) : (
-        <div className="bg-neutral-900/40 backdrop-blur-md border border-neutral-800 rounded-2xl overflow-hidden shadow-2xl">
+        <div className="w-full">
           <DataTable columns={columns} data={data} searchKey="title" />
         </div>
       )}

@@ -45,15 +45,15 @@ export default function VehiclesPage() {
       header: "Марка",
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
-          <CarFront className="h-4 w-4 text-neutral-500" />
-          <span className="font-medium text-white">{row.getValue("brand")}</span>
+          <CarFront className="h-4 w-4 text-slate-400" />
+          <span className="font-medium text-slate-900">{row.getValue("brand")}</span>
         </div>
       )
     },
     {
       accessorKey: "model",
       header: "Модель",
-      cell: ({ row }) => <span className="text-neutral-300">{row.getValue("model")}</span>
+      cell: ({ row }) => <span className="text-slate-700">{row.getValue("model")}</span>
     },
     {
       accessorKey: "vin",
@@ -61,7 +61,7 @@ export default function VehiclesPage() {
       cell: ({ row }) => {
         const vin = row.getValue<string>("vin")
         return (
-          <div className="flex items-center gap-2 text-neutral-400">
+          <div className="flex items-center gap-2 text-slate-500">
             {vin ? (
               <>
                 <Fingerprint className="h-3 w-3" />
@@ -84,8 +84,8 @@ export default function VehiclesPage() {
     >
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-white">Автомобили</h2>
-          <p className="text-neutral-400 mt-1">База данных транспортных средств клиентов.</p>
+          <h2 className="text-3xl font-bold tracking-tight text-slate-900">Автомобили</h2>
+          <p className="text-slate-500 mt-1">База данных транспортных средств клиентов.</p>
         </div>
       </div>
 
@@ -94,7 +94,7 @@ export default function VehiclesPage() {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
         </div>
       ) : (
-        <div className="bg-neutral-900/40 backdrop-blur-md border border-neutral-800 rounded-2xl overflow-hidden shadow-2xl">
+        <div className="w-full">
           <DataTable columns={columns} data={data} searchKey="licensePlate" />
         </div>
       )}

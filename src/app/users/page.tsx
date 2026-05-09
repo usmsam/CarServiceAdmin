@@ -41,7 +41,7 @@ export default function UsersPage() {
     {
       accessorKey: "_id",
       header: "ID",
-      cell: ({ row }) => <div className="text-xs font-mono text-neutral-500">{row.getValue<string>("_id").slice(-8)}</div>
+      cell: ({ row }) => <div className="text-xs font-mono text-slate-400">{row.getValue<string>("_id").slice(-8)}</div>
     },
     {
       accessorKey: "fullName",
@@ -51,14 +51,14 @@ export default function UsersPage() {
           <div className="h-8 w-8 rounded-full bg-orange-500/10 flex items-center justify-center border border-orange-500/20">
             <UserCircle2 className="h-5 w-5 text-orange-400" />
           </div>
-          <span className="font-medium text-white">{row.getValue("fullName")}</span>
+          <span className="font-medium text-slate-900">{row.getValue("fullName")}</span>
         </div>
       )
     },
     {
       accessorKey: "telegramId",
       header: "Telegram ID",
-      cell: ({ row }) => <div className="text-neutral-400">{row.getValue("telegramId")}</div>
+      cell: ({ row }) => <div className="text-slate-500">{row.getValue("telegramId")}</div>
     },
     {
       accessorKey: "role",
@@ -81,7 +81,7 @@ export default function UsersPage() {
             }`}>
               <SelectValue placeholder="Выберите роль" />
             </SelectTrigger>
-            <SelectContent className="bg-neutral-900/95 backdrop-blur-xl border-neutral-800 text-white">
+            <SelectContent className="bg-white backdrop-blur-xl border-slate-200 text-slate-900">
               <SelectItem value="SUPERADMIN">
                 <div className="flex items-center gap-2"><ShieldCheck className="w-4 h-4 text-red-400"/> Суперадмин</div>
               </SelectItem>
@@ -108,8 +108,8 @@ export default function UsersPage() {
       className="space-y-6"
     >
       <div>
-        <h2 className="text-3xl font-bold tracking-tight text-white">Управление пользователями</h2>
-        <p className="text-neutral-400 mt-1">Назначение ролей сотрудникам и ведение базы клиентов.</p>
+        <h2 className="text-3xl font-bold tracking-tight text-slate-900">Управление пользователями</h2>
+        <p className="text-slate-500 mt-1">Назначение ролей сотрудникам и ведение базы клиентов.</p>
       </div>
 
       {loading ? (
@@ -117,7 +117,7 @@ export default function UsersPage() {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
         </div>
       ) : (
-        <div className="bg-neutral-900/40 backdrop-blur-md border border-neutral-800 rounded-2xl overflow-hidden shadow-2xl">
+        <div className="w-full">
           <DataTable columns={columns} data={data} searchKey="fullName" />
         </div>
       )}

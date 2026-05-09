@@ -66,11 +66,11 @@ export function DataTable<TData, TValue>({
           />
         </div>
       )}
-      <div className="rounded-md border border-neutral-800 bg-neutral-950/50">
+      <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="border-neutral-800 hover:bg-neutral-900/50">
+              <TableRow key={headerGroup.id} className="border-slate-200 hover:bg-slate-50">
                 {headerGroup.headers.map((header) => {
                   return (
                     <TableHead key={header.id}>
@@ -92,7 +92,7 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  className="border-neutral-800 hover:bg-neutral-900/50 cursor-pointer"
+                  className="border-slate-200 hover:bg-slate-50 cursor-pointer"
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
@@ -103,7 +103,7 @@ export function DataTable<TData, TValue>({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center text-neutral-400">
+                <TableCell colSpan={columns.length} className="h-24 text-center text-slate-500">
                   No results.
                 </TableCell>
               </TableRow>
@@ -117,7 +117,7 @@ export function DataTable<TData, TValue>({
           size="sm"
           onClick={() => table.previousPage()}
           disabled={!table.getCanPreviousPage()}
-          className="border-neutral-800"
+          className="border-slate-200"
         >
           Previous
         </Button>
@@ -126,7 +126,7 @@ export function DataTable<TData, TValue>({
           size="sm"
           onClick={() => table.nextPage()}
           disabled={!table.getCanNextPage()}
-          className="border-neutral-800"
+          className="border-slate-200"
         >
           Next
         </Button>

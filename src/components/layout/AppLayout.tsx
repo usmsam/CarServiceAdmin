@@ -20,8 +20,8 @@ export function AppLayout({ children }: { children: ReactNode }) {
     if (isMounted) {
       if (!isAuthenticated && !pathname.startsWith('/auth')) {
         router.push('/auth')
-      } else if (isAuthenticated && user?.role !== 'SUPERADMIN' && !pathname.startsWith('/auth')) {
-        // Ограничение: пускаем только SUPERADMIN
+      } else if (isAuthenticated && user?.role !== 'SUPERADMIN' && user?.role !== 'OWNER' && !pathname.startsWith('/auth')) {
+        // Ограничение: пускаем только SUPERADMIN и OWNER
         logout()
         router.push('/auth')
       }
@@ -40,7 +40,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
-          className="min-h-screen bg-neutral-950 text-neutral-50"
+          className="min-h-screen bg-slate-50 text-slate-900"
         >
           {children}
         </motion.div>
@@ -48,13 +48,13 @@ export function AppLayout({ children }: { children: ReactNode }) {
     )
   }
 
-  if (!isAuthenticated || user?.role !== 'SUPERADMIN') return null
+  if (!isAuthenticated || (user?.role !== 'SUPERADMIN' && user?.role !== 'OWNER')) return null
 
   return (
-    <div className="flex h-screen overflow-hidden bg-neutral-950 text-neutral-50">
+    <div className="flex h-screen overflow-hidden bg-slate-50 text-slate-900">
       <Sidebar />
-      <main className="flex-1 overflow-y-auto bg-neutral-950 p-8 relative">
-        <div className="absolute top-0 left-1/4 w-1/2 h-64 bg-blue-600/5 rounded-full blur-[100px] pointer-events-none" />
+      <main className="flex-1 overflow-y-auto bg-slate-50 p-8 relative">
+        <div className="absolute top-0 left-1/4 w-1/2 h-64 bg-blue-500/10 rounded-full blur-[100px] pointer-events-none" />
         <div className="mx-auto max-w-7xl relative z-10">
           <AnimatePresence mode="wait">
             <motion.div

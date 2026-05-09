@@ -5,6 +5,7 @@ export interface CatalogItem {
   categoryId: any;
   title: string;
   price: number;
+  serviceId?: any;
 }
 
 export const CatalogService = {

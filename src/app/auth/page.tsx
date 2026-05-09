@@ -28,9 +28,9 @@ function AuthContent() {
       try {
         localStorage.setItem('token', authToken)
         const user = await AuthService.getMe()
-        if (user.role !== 'SUPERADMIN') {
+        if (user.role !== 'SUPERADMIN' && user.role !== 'OWNER') {
           localStorage.removeItem('token')
-          setError('Доступ запрещен. Требуются права суперадмина.')
+          setError('Доступ запрещен. Требуются права администратора.')
           setInitLoading(false)
           return
         }
@@ -66,9 +66,9 @@ function AuthContent() {
       if (token) {
         localStorage.setItem('token', token)
         const user = await AuthService.getMe()
-        if (user.role !== 'SUPERADMIN') {
+        if (user.role !== 'SUPERADMIN' && user.role !== 'OWNER') {
           localStorage.removeItem('token')
-          setError('Доступ запрещен. Требуются права суперадмина.')
+          setError('Доступ запрещен. Требуются права администратора.')
           setLoading(false)
           return
         }
@@ -87,30 +87,30 @@ function AuthContent() {
 
   if (initLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-neutral-950">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-500 mb-4" />
-        <p className="text-neutral-400">Проверка авторизации...</p>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600 mb-4" />
+        <p className="text-slate-500">Проверка авторизации...</p>
       </div>
     )
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-neutral-950 px-4 relative overflow-hidden">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 px-4 relative overflow-hidden">
       {/* Background decorations */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-indigo-500/20 rounded-full blur-[120px] pointer-events-none" />
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md"
       >
-        <div className="bg-neutral-900/50 backdrop-blur-xl border border-neutral-800 p-8 rounded-2xl shadow-2xl relative z-10">
+        <div className="bg-white/80 backdrop-blur-xl border border-slate-200 p-8 rounded-2xl shadow-xl relative z-10">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
               AvtoLog Admin
             </h1>
-            <p className="text-neutral-400 mt-2 text-sm">Вход для администраторов</p>
+            <p className="text-slate-500 mt-2 text-sm">Вход для администраторов</p>
           </div>
 
           {error && (
@@ -125,29 +125,29 @@ function AuthContent() {
 
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
-              <Label className="text-neutral-300">Логин</Label>
+              <Label className="text-slate-700">Логин</Label>
               <div className="relative">
-                <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-500" />
+                <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
                 <Input
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="admin"
-                  className="pl-10 bg-neutral-950/50 border-neutral-800 focus:border-blue-500 text-white"
+                  className="pl-10 bg-slate-50/50 border-slate-200 focus:border-blue-500 text-slate-900 placeholder:text-slate-400"
                   required
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label className="text-neutral-300">Пароль</Label>
+              <Label className="text-slate-700">Пароль</Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-500" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
                 <Input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="pl-10 bg-neutral-950/50 border-neutral-800 focus:border-blue-500 text-white"
+                  className="pl-10 bg-slate-50/50 border-slate-200 focus:border-blue-500 text-slate-900 placeholder:text-slate-400"
                   required
                 />
               </div>
@@ -155,7 +155,7 @@ function AuthContent() {
 
             <Button
               type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium h-11"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-slate-900 font-medium h-11"
               disabled={loading}
             >
               {loading ? (
@@ -177,8 +177,8 @@ function AuthContent() {
 export default function AuthPage() {
   return (
     <Suspense fallback={
-      <div className="flex items-center justify-center min-h-screen bg-neutral-950">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+      <div className="flex items-center justify-center min-h-screen bg-slate-50">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
       </div>
     }>
       <AuthContent />

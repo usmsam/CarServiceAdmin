@@ -61,9 +61,9 @@ export function Sidebar() {
   ]
 
   return (
-    <div className="flex h-full w-64 flex-col bg-neutral-950/80 backdrop-blur-xl border-r border-neutral-800 text-white relative z-20">
-      <div className="flex h-16 items-center px-6 py-4 border-b border-neutral-800/50">
-        <h1 className="text-xl font-bold tracking-wider bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">AvtoLog</h1>
+    <div className="flex h-full w-64 flex-col bg-white border-r border-slate-200 text-slate-900 relative z-20 shadow-sm">
+      <div className="flex h-16 items-center px-6 py-4 border-b border-slate-100">
+        <h1 className="text-xl font-bold tracking-wider bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">AvtoLog</h1>
       </div>
 
       <div className="flex-1 overflow-y-auto py-6">
@@ -79,11 +79,11 @@ export function Sidebar() {
                   href={route.href}
                   className={`flex items-center space-x-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
                     isActive
-                      ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20"
-                      : "text-neutral-400 hover:bg-neutral-900/80 hover:text-white"
+                      ? "bg-blue-600 text-white shadow-md shadow-blue-500/20"
+                      : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
                   }`}
                 >
-                  <route.icon className={`h-5 w-5 ${isActive ? 'text-white' : 'text-neutral-500'}`} />
+                  <route.icon className={`h-5 w-5 ${isActive ? 'text-white' : 'text-slate-400'}`} />
                   <span>{route.label}</span>
                 </Link>
               )
@@ -91,10 +91,10 @@ export function Sidebar() {
         </nav>
       </div>
       
-      <div className="border-t border-neutral-800/50 p-4 bg-neutral-950/50">
+      <div className="border-t border-slate-100 p-4 bg-slate-50/50">
         <div className="mb-4 px-3 flex flex-col">
-          <span className="text-sm font-medium truncate text-white">{user?.fullName || "Суперадмин"}</span>
-          <span className="text-xs text-blue-400 font-medium">SUPERADMIN</span>
+          <span className="text-sm font-medium truncate text-slate-900">{user?.fullName || "Суперадмин"}</span>
+          <span className="text-xs text-blue-600 font-medium uppercase">{user?.role}</span>
         </div>
         <button
           onClick={() => {

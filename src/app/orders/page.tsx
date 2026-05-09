@@ -147,7 +147,7 @@ export default function OrdersPage() {
           <div className="p-2 bg-blue-500/10 rounded-lg">
             <ShoppingBag className="h-4 w-4 text-blue-400" />
           </div>
-          <span className="font-medium text-white">#{row.getValue<string>("_id").slice(-6).toUpperCase()}</span>
+          <span className="font-medium text-slate-900">#{row.getValue<string>("_id").slice(-6).toUpperCase()}</span>
         </div>
       )
     },
@@ -155,11 +155,24 @@ export default function OrdersPage() {
       accessorKey: "createdAt",
       header: "Дата",
       cell: ({ row }) => (
-        <div className="flex items-center gap-2 text-neutral-400">
+        <div className="flex items-center gap-2 text-slate-500">
           <CalendarClock className="h-3 w-3" />
           {new Date(row.getValue("createdAt")).toLocaleDateString('ru-RU')}
         </div>
       )
+    },
+    {
+      id: "station",
+      header: "СТО",
+      cell: ({ row }) => {
+        const station = row.original.serviceId as any;
+        return (
+          <div className="flex flex-col">
+            <span className="font-medium text-slate-900">{station?.name || 'Неизвестно'}</span>
+            <span className="text-xs text-slate-500">{station?.address || ''}</span>
+          </div>
+        )
+      }
     },
     {
       accessorKey: "status",
@@ -177,12 +190,12 @@ export default function OrdersPage() {
             <SelectTrigger className={`w-[140px] h-8 text-xs border-0 font-medium ${
               status === 'DONE' ? 'bg-emerald-500/10 text-emerald-400' :
               status === 'OPEN' ? 'bg-blue-500/10 text-blue-400' :
-              status === 'CLOSED' ? 'bg-neutral-500/10 text-neutral-400' :
+              status === 'CLOSED' ? 'bg-slate-100 text-slate-500' :
               'bg-amber-500/10 text-amber-400'
             }`}>
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="bg-neutral-900/95 backdrop-blur-xl border-neutral-800 text-white">
+            <SelectContent className="bg-white backdrop-blur-xl border-slate-200 text-slate-900">
               <SelectItem value="OPEN">ОТКРЫТ</SelectItem>
               <SelectItem value="IN_PROGRESS">В РАБОТЕ</SelectItem>
               <SelectItem value="DONE">ВЫПОЛНЕН</SelectItem>
@@ -201,7 +214,7 @@ export default function OrdersPage() {
           style: "currency",
           currency: "RUB",
         }).format(amount)
-        return <div className="text-right font-bold text-white tracking-tight">{formatted}</div>
+        return <div className="text-right font-bold text-slate-900 tracking-tight">{formatted}</div>
       },
     },
     {
@@ -249,21 +262,21 @@ export default function OrdersPage() {
     >
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-white">Наряды-заказы</h2>
-          <p className="text-neutral-400 mt-1">Управление всеми работами и клиентами.</p>
+          <h2 className="text-3xl font-bold tracking-tight text-slate-900">Наряды-заказы</h2>
+          <p className="text-slate-500 mt-1">Управление всеми работами и клиентами.</p>
         </div>
         
         <Dialog open={openCreate} onOpenChange={setOpenCreate}>
           <DialogTrigger render={
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20 border-0">
+            <Button className="bg-blue-600 hover:bg-blue-700 text-slate-900 shadow-lg shadow-blue-500/20 border-0">
               <Plus className="h-4 w-4 mr-2" />
               Создать заказ
             </Button>
           } />
-          <DialogContent className="bg-neutral-900/90 backdrop-blur-xl border-neutral-800 text-white sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+          <DialogContent className="bg-white backdrop-blur-xl border-slate-200 text-slate-900 sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Создание наряда-заказа</DialogTitle>
-              <DialogDescription className="text-neutral-400">
+              <DialogDescription className="text-slate-500">
                 Сначала создайте заказ, затем вы сможете добавить в него работы.
               </DialogDescription>
             </DialogHeader>
@@ -277,10 +290,10 @@ export default function OrdersPage() {
                       setNewOrder(prev => ({ ...prev, serviceId: val || "" }))
                     }}
                   >
-                    <SelectTrigger className="bg-neutral-950/50 border-neutral-800 focus:border-blue-500 h-10">
+                    <SelectTrigger className="bg-slate-50 border-slate-200 focus:border-blue-500 h-10">
                       <SelectValue placeholder="Выберите СТО" />
                     </SelectTrigger>
-                    <SelectContent className="bg-neutral-900/95 backdrop-blur-xl border-neutral-800 text-white">
+                    <SelectContent className="bg-white backdrop-blur-xl border-slate-200 text-slate-900">
                       {stations.map((s) => (
                         <SelectItem key={s._id} value={s._id}>
                           {s.name}
@@ -305,10 +318,10 @@ export default function OrdersPage() {
                         }))
                       }}
                     >
-                      <SelectTrigger className="bg-neutral-950/50 border-neutral-800 focus:border-blue-500 h-10">
+                      <SelectTrigger className="bg-slate-50 border-slate-200 focus:border-blue-500 h-10">
                         <SelectValue placeholder="Выберите авто" />
                       </SelectTrigger>
-                      <SelectContent className="bg-neutral-900/95 backdrop-blur-xl border-neutral-800 text-white">
+                      <SelectContent className="bg-white backdrop-blur-xl border-slate-200 text-slate-900">
                         {vehicles.map((v) => (
                           <SelectItem key={v._id} value={v._id}>
                             {v.licensePlate} — {v.brand} {v.model}
@@ -327,10 +340,10 @@ export default function OrdersPage() {
                       setNewOrder(prev => ({ ...prev, masterId: val || "" }))
                     }}
                   >
-                    <SelectTrigger className="bg-neutral-950/50 border-neutral-800 focus:border-blue-500 h-10">
+                    <SelectTrigger className="bg-slate-50 border-slate-200 focus:border-blue-500 h-10">
                       <SelectValue placeholder="Назначить мастера" />
                     </SelectTrigger>
-                    <SelectContent className="bg-neutral-900/95 backdrop-blur-xl border-neutral-800 text-white">
+                    <SelectContent className="bg-white backdrop-blur-xl border-slate-200 text-slate-900">
                       {masters.map((m) => (
                         <SelectItem key={m._id} value={m._id}>
                           {m.fullName}
@@ -342,13 +355,13 @@ export default function OrdersPage() {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="ghost" onClick={() => setOpenCreate(false)} className="text-neutral-400 hover:text-white hover:bg-neutral-800">
+              <Button variant="ghost" onClick={() => setOpenCreate(false)} className="text-slate-500 hover:text-slate-900 hover:bg-slate-100">
                 Отмена
               </Button>
               <Button 
                 onClick={handleCreateOrder} 
                 disabled={!newOrder.serviceId || !newOrder.vehicleId || !newOrder.clientId || !newOrder.masterId}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-8"
+                className="bg-blue-600 hover:bg-blue-700 text-slate-900 px-8"
               >
                 Создать
               </Button>
@@ -362,18 +375,18 @@ export default function OrdersPage() {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
         </div>
       ) : (
-        <div className="bg-neutral-900/40 backdrop-blur-md border border-neutral-800 rounded-2xl overflow-hidden shadow-2xl">
+        <div className="w-full">
           <DataTable columns={columns} data={data} searchKey="_id" />
         </div>
       )}
 
       {/* Details & Services Management Dialog */}
       <Dialog open={openDetails} onOpenChange={setOpenDetails}>
-        <DialogContent className="bg-neutral-900/90 backdrop-blur-xl border-neutral-800 text-white sm:max-w-[500px]">
+        <DialogContent className="bg-white backdrop-blur-xl border-slate-200 text-slate-900 sm:max-w-[500px]">
           <DialogHeader>
             <div className="flex items-center gap-3 mb-2">
               <div className="p-2 bg-blue-600 rounded-xl">
-                <ShoppingBag className="h-5 w-5 text-white" />
+                <ShoppingBag className="h-5 w-5 text-slate-900" />
               </div>
               <div>
                 <DialogTitle className="text-xl flex items-center gap-2">
@@ -392,21 +405,21 @@ export default function OrdersPage() {
 
           <div className="grid gap-6 py-4">
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-neutral-950/50 p-3 rounded-xl border border-neutral-800">
-                <div className="text-[10px] text-neutral-500 uppercase tracking-wider mb-1">Автомобиль</div>
+              <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                <div className="text-[10px] text-slate-400 uppercase tracking-wider mb-1">Автомобиль</div>
                 <div className="text-sm font-medium">{(selectedOrder?.vehicleId as any)?.brand} {(selectedOrder?.vehicleId as any)?.model}</div>
                 <div className="text-xs text-blue-400 font-mono mt-1">{(selectedOrder?.vehicleId as any)?.licensePlate}</div>
               </div>
-              <div className="bg-neutral-950/50 p-3 rounded-xl border border-neutral-800">
-                <div className="text-[10px] text-neutral-500 uppercase tracking-wider mb-1">Клиент</div>
+              <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                <div className="text-[10px] text-slate-400 uppercase tracking-wider mb-1">Клиент</div>
                 <div className="text-sm font-medium">{(selectedOrder?.clientId as any)?.fullName}</div>
-                <div className="text-xs text-neutral-400 mt-1">{(selectedOrder?.clientId as any)?.phone}</div>
+                <div className="text-xs text-slate-500 mt-1">{(selectedOrder?.clientId as any)?.phone}</div>
               </div>
             </div>
 
             <div className="space-y-4">
               <div className="flex justify-between items-center">
-                <div className="text-[10px] text-neutral-500 uppercase tracking-wider">Работы в заказе</div>
+                <div className="text-[10px] text-slate-400 uppercase tracking-wider">Работы в заказе</div>
                 <Select onValueChange={(val: string | null) => {
                   const item = catalog.find(i => i._id === val)
                   if (item && selectedOrder) {
@@ -418,7 +431,7 @@ export default function OrdersPage() {
                     <Plus className="h-3 w-3 mr-1" />
                     Добавить работу
                   </SelectTrigger>
-                  <SelectContent className="bg-neutral-900/95 backdrop-blur-xl border-neutral-800 text-white">
+                  <SelectContent className="bg-white backdrop-blur-xl border-slate-200 text-slate-900">
                     {catalog.map((i) => (
                       <SelectItem key={i._id} value={i._id}>
                         {i.title} — {i.price.toLocaleString()} ₽
@@ -430,15 +443,15 @@ export default function OrdersPage() {
 
               <div className="space-y-2 max-h-[250px] overflow-y-auto pr-1">
                 {selectedOrder?.services?.map((s, idx) => (
-                  <div key={idx} className="flex justify-between items-center p-2.5 bg-neutral-950/30 rounded-xl border border-neutral-800/50 group">
+                  <div key={idx} className="flex justify-between items-center p-2.5 bg-neutral-950/30 rounded-xl border border-slate-200 group">
                     <div className="flex items-center gap-3">
-                      <div className="h-7 w-7 rounded-lg bg-neutral-900 flex items-center justify-center">
-                        <Wrench className="h-3.5 w-3.5 text-neutral-500" />
+                      <div className="h-7 w-7 rounded-lg bg-white flex items-center justify-center">
+                        <Wrench className="h-3.5 w-3.5 text-slate-400" />
                       </div>
                       <span className="text-sm font-medium">{s.title}</span>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="text-sm font-bold text-white">{s.price.toLocaleString()} ₽</span>
+                      <span className="text-sm font-bold text-slate-900">{s.price.toLocaleString()} ₽</span>
                       <Button 
                         variant="ghost" 
                         size="icon" 
@@ -456,7 +469,7 @@ export default function OrdersPage() {
                   </div>
                 ))}
                 {!selectedOrder?.services?.length && (
-                  <div className="text-center py-8 border border-dashed border-neutral-800 rounded-2xl text-neutral-500 text-xs italic">
+                  <div className="text-center py-8 border border-dashed border-slate-200 rounded-2xl text-slate-400 text-xs italic">
                     Услуги еще не добавлены
                   </div>
                 )}
@@ -465,14 +478,14 @@ export default function OrdersPage() {
 
             <div className="bg-gradient-to-br from-blue-600/20 to-indigo-600/20 p-5 rounded-2xl border border-blue-500/20 flex justify-between items-center">
               <span className="text-blue-300/80 text-sm font-medium">Итого к оплате:</span>
-              <span className="text-3xl font-black text-white tracking-tighter">
+              <span className="text-3xl font-black text-slate-900 tracking-tighter">
                 {selectedOrder?.totalAmount.toLocaleString()} ₽
               </span>
             </div>
           </div>
 
           <DialogFooter>
-            <Button onClick={() => setOpenDetails(false)} className="w-full bg-neutral-950 hover:bg-neutral-900 text-white border border-neutral-800">
+            <Button onClick={() => setOpenDetails(false)} className="w-full bg-neutral-950 hover:bg-white text-slate-900 border border-slate-200">
               Готово
             </Button>
           </DialogFooter>

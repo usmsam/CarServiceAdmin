@@ -4,6 +4,7 @@ export interface ServiceCategory {
   _id: string;
   name: string;
   order: number;
+  serviceId?: any;
 }
 
 export const ServiceCategoriesService = {
