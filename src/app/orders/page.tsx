@@ -112,11 +112,11 @@ export default function OrdersPage() {
   const handleUpdateServices = async (orderId: string, updatedServices: any[]) => {
     try {
       const totalAmount = updatedServices.reduce((sum, s) => sum + (s.price * s.qty), 0)
-      const updatedOrder = await OrdersService.updateOrder(orderId, { 
+      const updatedOrder = await OrdersService.updateOrder(orderId, {
         services: updatedServices,
-        totalAmount 
+        totalAmount
       })
-      
+
       // Update local state
       setData(prev => prev.map(o => o._id === orderId ? updatedOrder : o))
       setSelectedOrder(updatedOrder)
@@ -187,12 +187,11 @@ export default function OrdersPage() {
               if (val) handleStatusChange(orderId, val)
             }}
           >
-            <SelectTrigger className={`w-[140px] h-8 text-xs border-0 font-medium ${
-              status === 'DONE' ? 'bg-emerald-500/10 text-emerald-400' :
-              status === 'OPEN' ? 'bg-blue-500/10 text-blue-400' :
-              status === 'CLOSED' ? 'bg-slate-100 text-slate-500' :
-              'bg-amber-500/10 text-amber-400'
-            }`}>
+            <SelectTrigger className={`w-[140px] h-8 text-xs border-0 font-medium ${status === 'DONE' ? 'bg-emerald-500/10 text-emerald-400' :
+                status === 'OPEN' ? 'bg-blue-500/10 text-blue-400' :
+                  status === 'CLOSED' ? 'bg-slate-100 text-slate-500' :
+                    'bg-amber-500/10 text-amber-400'
+              }`}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="bg-white backdrop-blur-xl border-slate-200 text-slate-900">
@@ -255,7 +254,7 @@ export default function OrdersPage() {
   ]
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="space-y-6"
@@ -265,7 +264,7 @@ export default function OrdersPage() {
           <h2 className="text-3xl font-bold tracking-tight text-slate-900">Наряды-заказы</h2>
           <p className="text-slate-500 mt-1">Управление всеми работами и клиентами.</p>
         </div>
-        
+
         <Dialog open={openCreate} onOpenChange={setOpenCreate}>
           <DialogTrigger render={
             <Button className="bg-blue-600 hover:bg-blue-700 text-slate-900 shadow-lg shadow-blue-500/20 border-0">
@@ -311,8 +310,8 @@ export default function OrdersPage() {
                       onValueChange={(val) => {
                         const vId = val || ""
                         const vehicle = vehicles.find(v => v._id === vId)
-                        setNewOrder(prev => ({ 
-                          ...prev, 
+                        setNewOrder(prev => ({
+                          ...prev,
                           vehicleId: vId,
                           clientId: vehicle?.ownerId || ""
                         }))
@@ -358,8 +357,8 @@ export default function OrdersPage() {
               <Button variant="ghost" onClick={() => setOpenCreate(false)} className="text-slate-500 hover:text-slate-900 hover:bg-slate-100">
                 Отмена
               </Button>
-              <Button 
-                onClick={handleCreateOrder} 
+              <Button
+                onClick={handleCreateOrder}
                 disabled={!newOrder.serviceId || !newOrder.vehicleId || !newOrder.clientId || !newOrder.masterId}
                 className="bg-blue-600 hover:bg-blue-700 text-slate-900 px-8"
               >
@@ -393,8 +392,8 @@ export default function OrdersPage() {
                   Заказ #{selectedOrder?._id.slice(-6).toUpperCase()}
                   <Badge className={
                     selectedOrder?.status === 'DONE' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-                    selectedOrder?.status === 'OPEN' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
-                    'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                      selectedOrder?.status === 'OPEN' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
+                        'bg-amber-500/10 text-amber-400 border-amber-500/20'
                   }>
                     {selectedOrder?.status}
                   </Badge>
@@ -434,7 +433,7 @@ export default function OrdersPage() {
                   <SelectContent className="bg-white backdrop-blur-xl border-slate-200 text-slate-900">
                     {catalog.map((i) => (
                       <SelectItem key={i._id} value={i._id}>
-                        {i.title} — {i.price.toLocaleString()} ₽
+                        {i.title} — {i.price.toLocaleString()} сум
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -451,10 +450,10 @@ export default function OrdersPage() {
                       <span className="text-sm font-medium">{s.title}</span>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="text-sm font-bold text-slate-900">{s.price.toLocaleString()} ₽</span>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
+                      <span className="text-sm font-bold text-slate-900">{s.price.toLocaleString()} сум</span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         className="h-6 w-6 text-neutral-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"
                         onClick={() => {
                           if (selectedOrder) {
@@ -479,7 +478,7 @@ export default function OrdersPage() {
             <div className="bg-gradient-to-br from-blue-600/20 to-indigo-600/20 p-5 rounded-2xl border border-blue-500/20 flex justify-between items-center">
               <span className="text-blue-300/80 text-sm font-medium">Итого к оплате:</span>
               <span className="text-3xl font-black text-slate-900 tracking-tighter">
-                {selectedOrder?.totalAmount.toLocaleString()} ₽
+                {selectedOrder?.totalAmount.toLocaleString()} сум
               </span>
             </div>
           </div>

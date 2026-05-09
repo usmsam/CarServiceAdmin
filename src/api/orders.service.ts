@@ -37,5 +37,9 @@ export const OrdersService = {
   },
   deleteOrder: async (id: string): Promise<void> => {
     await api.delete(`/orders/${id}`);
+  },
+  getStats: async (): Promise<any> => {
+    const { data } = await api.get('/orders/stats/owner');
+    return data;
   }
 };

@@ -21,7 +21,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
     try {
       const orderRes = await OrdersService.getOrderById(id)
       setOrder(orderRes)
-      
+
       const stationId = (orderRes.serviceId as any)?._id || orderRes.serviceId
       const catalogRes = await CatalogService.getItems(stationId)
       setCatalog(catalogRes)
@@ -39,7 +39,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
   const handleUpdateServices = async (updatedServices: any[]) => {
     if (!order) return
     try {
-      const updatedOrder = await OrdersService.updateOrder(order._id, { 
+      const updatedOrder = await OrdersService.updateOrder(order._id, {
         services: updatedServices,
       })
       setOrder(updatedOrder)
@@ -65,7 +65,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
   }
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       className="max-w-5xl mx-auto space-y-8"
@@ -73,9 +73,9 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => router.back()}
             className="rounded-xl border border-slate-200 bg-white/50 hover:bg-slate-100"
           >
@@ -86,8 +86,8 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
               <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Заказ #{order._id.slice(-6).toUpperCase()}</h1>
               <Badge className={
                 order.status === 'DONE' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-                order.status === 'OPEN' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
-                'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                  order.status === 'OPEN' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
+                    'bg-amber-500/10 text-amber-400 border-amber-500/20'
               }>
                 {order.status}
               </Badge>
@@ -109,8 +109,8 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                 <ShoppingBag className="h-5 w-5 text-blue-500" />
                 Состав заказа
               </h3>
-              
-              <Select 
+
+              <Select
                 key={order.services?.length || 0}
                 onValueChange={(val) => {
                   const item = catalog.find(i => i._id === val)
@@ -127,7 +127,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                 <SelectContent className="bg-white backdrop-blur-xl border-slate-200 text-slate-900">
                   {catalog.map((i) => (
                     <SelectItem key={i._id} value={i._id}>
-                      {i.title} — {i.price.toLocaleString()} ₽
+                      {i.title} — {i.price.toLocaleString()} сум
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -143,14 +143,14 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                     </div>
                     <div>
                       <div className="text-sm font-semibold text-slate-900">{s.title}</div>
-                      <div className="text-xs text-slate-400">{s.price.toLocaleString()} ₽ × {s.qty}</div>
+                      <div className="text-xs text-slate-400">{s.price.toLocaleString()} сум × {s.qty}</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
-                    <span className="text-md font-bold text-slate-900">{(s.price * s.qty).toLocaleString()} ₽</span>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
+                    <span className="text-md font-bold text-slate-900">{(s.price * s.qty).toLocaleString()} сум</span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       className="h-8 w-8 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg opacity-0 group-hover:opacity-100 transition-all"
                       onClick={() => {
                         const updated = order.services.filter((_, i) => i !== idx)
@@ -162,7 +162,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                   </div>
                 </div>
               ))}
-              
+
               {!order.services?.length && (
                 <div className="text-center py-12 border-2 border-dashed border-slate-200 rounded-3xl text-slate-400 text-sm italic">
                   Список услуг пуст. Начните добавлять работы из каталога выше.
@@ -175,7 +175,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                 <p className="text-xs text-slate-400 uppercase tracking-widest font-bold mb-1">Итоговая стоимость</p>
                 <div className="text-4xl font-black text-slate-900 tracking-tighter flex items-center gap-2">
                   <CreditCard className="h-6 w-6 text-emerald-500" />
-                  {order.totalAmount.toLocaleString()} ₽
+                  {order.totalAmount.toLocaleString()} сум
                 </div>
               </div>
               <Button className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-8 h-12 font-bold shadow-lg shadow-emerald-600/20">
