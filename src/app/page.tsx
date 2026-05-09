@@ -436,7 +436,7 @@ export default function DashboardPage() {
                 </ResponsiveContainer>
               </div>
               <div className="grid grid-cols-2 gap-x-6 gap-y-2 mt-6">
-                {(isSuperAdmin ? stats.servicesStats : stats.brandsStats)?.slice(0, 4).map((b: any, i: number) => (
+                {stats.brandsStats?.slice(0, 4).map((b: any, i: number) => (
                   <div key={i} className="flex items-center gap-2">
                     <div className="h-2 w-2 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
                     <span className="text-[10px] font-bold text-slate-500 uppercase truncate max-w-[80px]">{b._id}</span>
