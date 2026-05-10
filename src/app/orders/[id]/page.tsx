@@ -71,19 +71,19 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
       className="max-w-5xl mx-auto space-y-8"
     >
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3 md:gap-4">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => router.back()}
-            className="rounded-xl border border-slate-200 bg-white/50 hover:bg-slate-100"
+            className="rounded-xl border border-slate-200 bg-white/50 hover:bg-slate-100 shrink-0"
           >
             <ChevronLeft className="h-5 w-5" />
           </Button>
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Заказ #{order._id.slice(-6).toUpperCase()}</h1>
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2 md:gap-3">
+              <h1 className="text-xl md:text-3xl font-bold text-slate-900 tracking-tight truncate">Заказ #{order._id.slice(-6).toUpperCase()}</h1>
               <Badge className={
                 order.status === 'DONE' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
                   order.status === 'OPEN' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
@@ -92,7 +92,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                 {order.status}
               </Badge>
             </div>
-            <p className="text-slate-400 text-sm mt-1 flex items-center gap-2">
+            <p className="text-slate-400 text-[10px] md:text-sm mt-1 flex items-center gap-2">
               <Clock className="h-3 w-3" />
               Создан {new Date(order.createdAt).toLocaleString('ru-RU')}
             </p>
@@ -100,16 +100,17 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
         {/* Left Column: Services Management */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white backdrop-blur-xl border border-slate-200 rounded-3xl p-6 shadow-sm">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+          <div className="bg-white backdrop-blur-xl border border-slate-200 rounded-3xl p-4 md:p-6 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+              <h3 className="text-base md:text-lg font-bold text-slate-900 flex items-center gap-2">
                 <ShoppingBag className="h-5 w-5 text-blue-500" />
                 Состав заказа
               </h3>
 
+              {/* 
               <Select
                 key={order.services?.length || 0}
                 onValueChange={(val) => {
@@ -120,7 +121,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                   }
                 }}
               >
-                <SelectTrigger className="w-[200px] bg-blue-600 hover:bg-blue-700 text-white border-0 h-9 rounded-xl transition-all shadow-lg shadow-blue-600/20">
+                <SelectTrigger className="w-full sm:w-[200px] bg-blue-600 hover:bg-blue-700 text-white border-0 h-9 rounded-xl transition-all shadow-lg shadow-blue-600/20">
                   <Plus className="h-4 w-4 mr-2" />
                   <SelectValue placeholder="Добавить работу" />
                 </SelectTrigger>
@@ -132,6 +133,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                   ))}
                 </SelectContent>
               </Select>
+              */}
             </div>
 
             <div className="space-y-3">
@@ -170,15 +172,15 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
               )}
             </div>
 
-            <div className="mt-8 pt-6 border-t border-slate-200 flex justify-between items-end">
+            <div className="mt-8 pt-6 border-t border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6">
               <div>
-                <p className="text-xs text-slate-400 uppercase tracking-widest font-bold mb-1">Итоговая стоимость</p>
-                <div className="text-4xl font-black text-slate-900 tracking-tighter flex items-center gap-2">
+                <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold mb-1">Итоговая стоимость</p>
+                <div className="text-3xl md:text-4xl font-black text-slate-900 tracking-tighter flex items-center gap-2">
                   <CreditCard className="h-6 w-6 text-emerald-500" />
                   {order.totalAmount.toLocaleString()} сум
                 </div>
               </div>
-              <Button className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-8 h-12 font-bold shadow-lg shadow-emerald-600/20">
+              <Button className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-8 h-12 font-bold shadow-lg shadow-emerald-600/20">
                 Оплатить заказ
               </Button>
             </div>

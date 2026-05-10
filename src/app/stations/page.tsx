@@ -145,15 +145,15 @@ export default function StationsPage() {
       animate={{ opacity: 1, y: 0 }}
       className="space-y-6"
     >
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-slate-900">Филиалы СТО</h2>
-          <p className="text-slate-500 mt-1">Управление филиалами и локациями автосервисов.</p>
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900">Филиалы СТО</h2>
+          <p className="text-sm text-slate-500 mt-1">Управление филиалами и локациями автосервисов.</p>
         </div>
         
         <Dialog open={openCreate} onOpenChange={setOpenCreate}>
           <DialogTrigger render={
-            <Button className="bg-emerald-600 hover:bg-emerald-700 text-slate-900 shadow-lg shadow-emerald-500/20 border-0">
+            <Button className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-500/20 border-0">
               <Plus className="h-4 w-4 mr-2" />
               Добавить СТО
             </Button>

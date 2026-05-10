@@ -107,9 +107,11 @@ export default function UsersPage() {
       animate={{ opacity: 1, y: 0 }}
       className="space-y-6"
     >
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight text-slate-900">Управление пользователями</h2>
-        <p className="text-slate-500 mt-1">Назначение ролей сотрудникам и ведение базы клиентов.</p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900">Управление пользователями</h2>
+          <p className="text-sm text-slate-500 mt-1">Назначение ролей сотрудникам и ведение базы клиентов.</p>
+        </div>
       </div>
 
       {loading ? (

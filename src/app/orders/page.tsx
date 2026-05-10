@@ -28,9 +28,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Trash2, Plus, ShoppingBag, CalendarClock, Info, Wrench, X } from "lucide-react"
+import { Plus, ShoppingBag, CalendarClock, Trash2, Wrench } from "lucide-react"
 import { motion } from "framer-motion"
-import { CatalogItem, CatalogService } from "@/api/catalog.service"
 import { Badge } from "@/components/ui/badge"
 
 export default function OrdersPage() {
@@ -41,11 +40,8 @@ export default function OrdersPage() {
 
   const { user: currentUser } = useUserStore()
 
-  const [catalog, setCatalog] = useState<CatalogItem[]>([])
   const [stations, setStations] = useState<ServiceStation[]>([])
   const [openCreate, setOpenCreate] = useState(false)
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
-  const [openDetails, setOpenDetails] = useState(false)
   const [newOrder, setNewOrder] = useState({
     serviceId: "",
     vehicleId: "",
@@ -59,17 +55,15 @@ export default function OrdersPage() {
   const fetchData = async () => {
     setLoading(true)
     try {
-      const [ordersRes, vehiclesRes, usersRes, catalogRes, stationsRes] = await Promise.all([
+      const [ordersRes, vehiclesRes, usersRes, stationsRes] = await Promise.all([
         OrdersService.getOrders(),
         VehiclesService.getVehicles(),
         UsersService.getUsers(),
-        CatalogService.getItems(),
         StationsService.getStations()
       ])
       setData(ordersRes)
       setVehicles(vehiclesRes)
       setUsers(usersRes)
-      setCatalog(catalogRes)
       setStations(stationsRes)
     } catch (error) {
       console.error("Не удалось загрузить наряды-заказы", error)
@@ -106,22 +100,6 @@ export default function OrdersPage() {
       fetchData()
     } catch (error) {
       console.error("Не удалось создать заказ", error)
-    }
-  }
-
-  const handleUpdateServices = async (orderId: string, updatedServices: any[]) => {
-    try {
-      const totalAmount = updatedServices.reduce((sum, s) => sum + (s.price * s.qty), 0)
-      const updatedOrder = await OrdersService.updateOrder(orderId, {
-        services: updatedServices,
-        totalAmount
-      })
-
-      // Update local state
-      setData(prev => prev.map(o => o._id === orderId ? updatedOrder : o))
-      setSelectedOrder(updatedOrder)
-    } catch (error) {
-      console.error("Не удалось обновить услуги в заказе", error)
     }
   }
 
@@ -188,9 +166,9 @@ export default function OrdersPage() {
             }}
           >
             <SelectTrigger className={`w-[140px] h-8 text-xs border-0 font-medium ${status === 'DONE' ? 'bg-emerald-500/10 text-emerald-400' :
-                status === 'OPEN' ? 'bg-blue-500/10 text-blue-400' :
-                  status === 'CLOSED' ? 'bg-slate-100 text-slate-500' :
-                    'bg-amber-500/10 text-amber-400'
+              status === 'OPEN' ? 'bg-blue-500/10 text-blue-400' :
+                status === 'CLOSED' ? 'bg-slate-100 text-slate-500' :
+                  'bg-amber-500/10 text-amber-400'
               }`}>
               <SelectValue />
             </SelectTrigger>
@@ -259,15 +237,15 @@ export default function OrdersPage() {
       animate={{ opacity: 1, y: 0 }}
       className="space-y-6"
     >
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-slate-900">Наряды-заказы</h2>
-          <p className="text-slate-500 mt-1">Управление всеми работами и клиентами.</p>
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900">Наряды-заказы</h2>
+          <p className="text-sm text-slate-500 mt-1">Управление всеми работами и клиентами.</p>
         </div>
 
         <Dialog open={openCreate} onOpenChange={setOpenCreate}>
           <DialogTrigger render={
-            <Button className="bg-blue-600 hover:bg-blue-700 text-slate-900 shadow-lg shadow-blue-500/20 border-0">
+            <Button className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20 border-0">
               <Plus className="h-4 w-4 mr-2" />
               Создать заказ
             </Button>
@@ -378,118 +356,6 @@ export default function OrdersPage() {
           <DataTable columns={columns} data={data} searchKey="_id" />
         </div>
       )}
-
-      {/* Details & Services Management Dialog */}
-      <Dialog open={openDetails} onOpenChange={setOpenDetails}>
-        <DialogContent className="bg-white backdrop-blur-xl border-slate-200 text-slate-900 sm:max-w-[500px]">
-          <DialogHeader>
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-blue-600 rounded-xl">
-                <ShoppingBag className="h-5 w-5 text-slate-900" />
-              </div>
-              <div>
-                <DialogTitle className="text-xl flex items-center gap-2">
-                  Заказ #{selectedOrder?._id.slice(-6).toUpperCase()}
-                  <Badge className={
-                    selectedOrder?.status === 'DONE' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-                      selectedOrder?.status === 'OPEN' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
-                        'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                  }>
-                    {selectedOrder?.status}
-                  </Badge>
-                </DialogTitle>
-              </div>
-            </div>
-          </DialogHeader>
-
-          <div className="grid gap-6 py-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
-                <div className="text-[10px] text-slate-400 uppercase tracking-wider mb-1">Автомобиль</div>
-                <div className="text-sm font-medium">{(selectedOrder?.vehicleId as any)?.brand} {(selectedOrder?.vehicleId as any)?.model}</div>
-                <div className="text-xs text-blue-400 font-mono mt-1">{(selectedOrder?.vehicleId as any)?.licensePlate}</div>
-              </div>
-              <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
-                <div className="text-[10px] text-slate-400 uppercase tracking-wider mb-1">Клиент</div>
-                <div className="text-sm font-medium">{(selectedOrder?.clientId as any)?.fullName}</div>
-                <div className="text-xs text-slate-500 mt-1">{(selectedOrder?.clientId as any)?.phone}</div>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <div className="text-[10px] text-slate-400 uppercase tracking-wider">Работы в заказе</div>
-                <Select onValueChange={(val: string | null) => {
-                  const item = catalog.find(i => i._id === val)
-                  if (item && selectedOrder) {
-                    const updated = [...(selectedOrder.services || []), { title: item.title, price: item.price, qty: 1, catalogId: item._id }]
-                    handleUpdateServices(selectedOrder._id, updated)
-                  }
-                }}>
-                  <SelectTrigger className="w-[180px] bg-blue-600/10 border-blue-500/20 text-blue-400 h-7 text-[10px] uppercase font-bold tracking-tight">
-                    <Plus className="h-3 w-3 mr-1" />
-                    Добавить работу
-                  </SelectTrigger>
-                  <SelectContent className="bg-white backdrop-blur-xl border-slate-200 text-slate-900">
-                    {catalog.map((i) => (
-                      <SelectItem key={i._id} value={i._id}>
-                        {i.title} — {i.price.toLocaleString()} сум
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2 max-h-[250px] overflow-y-auto pr-1">
-                {selectedOrder?.services?.map((s, idx) => (
-                  <div key={idx} className="flex justify-between items-center p-2.5 bg-neutral-950/30 rounded-xl border border-slate-200 group">
-                    <div className="flex items-center gap-3">
-                      <div className="h-7 w-7 rounded-lg bg-white flex items-center justify-center">
-                        <Wrench className="h-3.5 w-3.5 text-slate-400" />
-                      </div>
-                      <span className="text-sm font-medium">{s.title}</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm font-bold text-slate-900">{s.price.toLocaleString()} сум</span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 text-neutral-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"
-                        onClick={() => {
-                          if (selectedOrder) {
-                            const updated = selectedOrder.services.filter((_, i) => i !== idx)
-                            handleUpdateServices(selectedOrder._id, updated)
-                          }
-                        }}
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-                {!selectedOrder?.services?.length && (
-                  <div className="text-center py-8 border border-dashed border-slate-200 rounded-2xl text-slate-400 text-xs italic">
-                    Услуги еще не добавлены
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-br from-blue-600/20 to-indigo-600/20 p-5 rounded-2xl border border-blue-500/20 flex justify-between items-center">
-              <span className="text-blue-300/80 text-sm font-medium">Итого к оплате:</span>
-              <span className="text-3xl font-black text-slate-900 tracking-tighter">
-                {selectedOrder?.totalAmount.toLocaleString()} сум
-              </span>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button onClick={() => setOpenDetails(false)} className="w-full bg-neutral-950 hover:bg-white text-slate-900 border border-slate-200">
-              Готово
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </motion.div>
   )
 }

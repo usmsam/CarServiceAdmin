@@ -120,7 +120,7 @@ export default function CategoriesPage() {
       cell: ({ row }) => {
         return (
           <div className="flex justify-end items-center gap-2 pr-4">
-            <Button
+            {/* <Button
               variant="ghost"
               size="icon"
               className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/20 transition-colors"
@@ -130,7 +130,7 @@ export default function CategoriesPage() {
               }}
             >
               <Edit className="h-4 w-4" />
-            </Button>
+            </Button> */}
             <Button
               variant="ghost"
               size="icon"
@@ -146,20 +146,20 @@ export default function CategoriesPage() {
   ]
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="space-y-6"
     >
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-slate-900">Категории услуг</h2>
-          <p className="text-slate-500 mt-1">Управление категориями для группировки услуг.</p>
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900">Категории услуг</h2>
+          <p className="text-sm text-slate-500 mt-1">Управление категориями для группировки услуг.</p>
         </div>
-        
+
         <Dialog open={openCreate} onOpenChange={setOpenCreate}>
           <DialogTrigger render={
-            <Button className="bg-purple-600 hover:bg-purple-700 text-slate-900 shadow-lg shadow-purple-500/20 border-0">
+            <Button className="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white shadow-lg shadow-purple-500/20 border-0">
               <Plus className="h-4 w-4 mr-2" />
               Добавить категорию
             </Button>
@@ -195,8 +195,8 @@ export default function CategoriesPage() {
               <Button variant="ghost" onClick={() => setOpenCreate(false)} className="text-slate-500 hover:text-slate-900 hover:bg-slate-100">
                 Отмена
               </Button>
-              <Button 
-                onClick={handleCreateCategory} 
+              <Button
+                onClick={handleCreateCategory}
                 disabled={!selectedCategory.name}
                 className="bg-blue-600 hover:bg-blue-700 text-slate-900"
               >
@@ -238,8 +238,8 @@ export default function CategoriesPage() {
             <Button variant="ghost" onClick={() => setOpenEdit(false)} className="text-slate-500 hover:text-slate-900 hover:bg-slate-100">
               Отмена
             </Button>
-            <Button 
-              onClick={handleUpdateCategory} 
+            <Button
+              onClick={handleUpdateCategory}
               disabled={!selectedCategory.name}
               className="bg-blue-600 hover:bg-blue-700 text-slate-900"
             >
