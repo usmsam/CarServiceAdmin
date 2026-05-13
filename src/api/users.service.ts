@@ -2,8 +2,8 @@ import api from './axios.instance';
 import { User } from '@/store/user.store';
 
 export const UsersService = {
-  getUsers: async (serviceId?: string): Promise<User[]> => {
-    const { data } = await api.get('/users', { params: { serviceId } });
+  getUsers: async (stationId?: string): Promise<User[]> => {
+    const { data } = await api.get('/users', { params: { stationId } });
     return data;
   },
   updateUserRole: async (id: string, role: string): Promise<User> => {

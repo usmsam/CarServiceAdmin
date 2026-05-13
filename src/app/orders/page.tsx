@@ -43,7 +43,7 @@ export default function OrdersPage() {
   const [stations, setStations] = useState<ServiceStation[]>([])
   const [openCreate, setOpenCreate] = useState(false)
   const [newOrder, setNewOrder] = useState({
-    serviceId: "",
+    stationId: "",
     vehicleId: "",
     clientId: "",
     masterId: "",
@@ -79,7 +79,7 @@ export default function OrdersPage() {
   const handleCreateOrder = async () => {
     try {
       const payload = {
-        serviceId: newOrder.serviceId,
+        stationId: newOrder.stationId,
         vehicleId: newOrder.vehicleId,
         clientId: newOrder.clientId,
         masterId: newOrder.masterId,
@@ -89,7 +89,7 @@ export default function OrdersPage() {
       await OrdersService.createOrder(payload)
       setOpenCreate(false)
       setNewOrder({
-        serviceId: "",
+        stationId: "",
         vehicleId: "",
         clientId: "",
         masterId: "",
@@ -143,7 +143,7 @@ export default function OrdersPage() {
       id: "station",
       header: "СТО",
       cell: ({ row }) => {
-        const station = row.original.serviceId as any;
+        const station = row.original.stationId as any;
         return (
           <div className="flex flex-col">
             <span className="font-medium text-slate-900">{station?.name || 'Неизвестно'}</span>
@@ -262,9 +262,9 @@ export default function OrdersPage() {
                 <div className="grid gap-2">
                   <Label>Мастерская (СТО)</Label>
                   <Select
-                    value={newOrder.serviceId || undefined}
+                    value={newOrder.stationId || undefined}
                     onValueChange={(val) => {
-                      setNewOrder(prev => ({ ...prev, serviceId: val || "" }))
+                      setNewOrder(prev => ({ ...prev, stationId: val || "" }))
                     }}
                   >
                     <SelectTrigger className="bg-slate-50 border-slate-200 focus:border-blue-500 h-10">
@@ -337,7 +337,7 @@ export default function OrdersPage() {
               </Button>
               <Button
                 onClick={handleCreateOrder}
-                disabled={!newOrder.serviceId || !newOrder.vehicleId || !newOrder.clientId || !newOrder.masterId}
+                disabled={!newOrder.stationId || !newOrder.vehicleId || !newOrder.clientId || !newOrder.masterId}
                 className="bg-blue-600 hover:bg-blue-700 text-slate-900 px-8"
               >
                 Создать

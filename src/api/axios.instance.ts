@@ -14,10 +14,10 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    
+
     const activeServiceId = useUserStore.getState().activeServiceId;
     if (activeServiceId) {
-      config.headers['x-service-id'] = activeServiceId;
+      config.headers['x-station-id'] = activeServiceId;
     }
     return config;
   },

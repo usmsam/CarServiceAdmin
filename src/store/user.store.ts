@@ -9,7 +9,7 @@ export interface User {
   username?: string;
   fullName: string;
   role: Role;
-  serviceId?: string; // the service this user belongs to, if any
+  stationId?: string; // the service this user belongs to, if any
 }
 
 interface UserState {
@@ -18,7 +18,7 @@ interface UserState {
   activeServiceId: string | null;
   login: (user: User, token: string) => void;
   logout: () => void;
-  setActiveService: (serviceId: string) => void;
+  setActiveService: (stationId: string) => void;
 }
 
 export const useUserStore = create<UserState>()(
@@ -29,13 +29,13 @@ export const useUserStore = create<UserState>()(
       activeServiceId: null,
       login: (user, token) => {
         localStorage.setItem('token', token);
-        set({ user, isAuthenticated: true, activeServiceId: user.serviceId || null });
+        set({ user, isAuthenticated: true, activeServiceId: user.stationId || null });
       },
       logout: () => {
         localStorage.removeItem('token');
         set({ user: null, isAuthenticated: false, activeServiceId: null });
       },
-      setActiveService: (serviceId) => set({ activeServiceId: serviceId }),
+      setActiveService: (stationId) => set({ activeServiceId: stationId }),
     }),
     {
       name: 'auth-storage',

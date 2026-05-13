@@ -132,7 +132,7 @@ export default function CatalogPage() {
       id: "station",
       header: "СТО",
       cell: ({ row }) => {
-        const station = row.original.serviceId as any;
+        const station = row.original.stationId as any;
         return (
           <div className="flex flex-col">
             <span className="font-medium text-slate-900">{station?.name || 'Общая'}</span>

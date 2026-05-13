@@ -2,7 +2,7 @@ import api from './axios.instance';
 
 export interface Order {
   _id: string;
-  serviceId: any;
+  stationId: any;
   vehicleId: any;
   clientId: any;
   masterId: any;
@@ -15,8 +15,8 @@ export interface Order {
 }
 
 export const OrdersService = {
-  getOrders: async (serviceId?: string): Promise<Order[]> => {
-    const { data } = await api.get('/orders', { params: { serviceId } });
+  getOrders: async (stationId?: string): Promise<Order[]> => {
+    const { data } = await api.get('/orders', { params: { stationId } });
     return data;
   },
   getOrderById: async (id: string): Promise<Order> => {

@@ -22,7 +22,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
       const orderRes = await OrdersService.getOrderById(id)
       setOrder(orderRes)
 
-      const stationId = (orderRes.serviceId as any)?._id || orderRes.serviceId
+      const stationId = (orderRes.stationId as any)?._id || orderRes.stationId
       const catalogRes = await CatalogService.getItems(stationId)
       setCatalog(catalogRes)
     } catch (error) {
@@ -199,8 +199,8 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
               Мастерская (СТО)
             </h4>
             <div className="space-y-1 relative z-10">
-              <div className="text-xl font-bold text-slate-900">{(order.serviceId as any)?.name || "Не указано"}</div>
-              <div className="text-slate-500 text-xs">{(order.serviceId as any)?.address}</div>
+              <div className="text-xl font-bold text-slate-900">{(order.stationId as any)?.name || "Не указано"}</div>
+              <div className="text-slate-500 text-xs">{(order.stationId as any)?.address}</div>
             </div>
           </div>
 

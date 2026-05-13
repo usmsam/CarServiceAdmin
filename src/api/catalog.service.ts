@@ -5,23 +5,23 @@ export interface CatalogItem {
   categoryId: any;
   title: string;
   price: number;
-  serviceId?: any;
+  stationId?: any;
 }
 
 export const CatalogService = {
-  getItems: async (serviceId?: string): Promise<CatalogItem[]> => {
-    const { data } = await api.get('/service-catalogs', { params: { serviceId } });
+  getItems: async (stationId?: string): Promise<CatalogItem[]> => {
+    const { data } = await api.get('/catalogs', { params: { stationId } });
     return data;
   },
   createItem: async (item: Partial<CatalogItem>): Promise<CatalogItem> => {
-    const { data } = await api.post('/service-catalogs', item);
+    const { data } = await api.post('/catalogs', item);
     return data;
   },
   updateItem: async (id: string, item: Partial<CatalogItem>): Promise<CatalogItem> => {
-    const { data } = await api.patch(`/service-catalogs/${id}`, item);
+    const { data } = await api.patch(`/catalogs/${id}`, item);
     return data;
   },
   deleteItem: async (id: string): Promise<void> => {
-    await api.delete(`/service-catalogs/${id}`);
+    await api.delete(`/catalogs/${id}`);
   }
 };
