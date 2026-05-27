@@ -14,10 +14,18 @@ export interface Order {
   updatedAt: string;
 }
 
+export interface PaginatedOrders {
+  items: Order[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 export const OrdersService = {
   getOrders: async (stationId?: string): Promise<Order[]> => {
     const { data } = await api.get('/orders', { params: { stationId } });
-    return data;
+    return (data as any).items ?? data;
   },
   getOrderById: async (id: string): Promise<Order> => {
     const { data } = await api.get(`/orders/${id}`);
