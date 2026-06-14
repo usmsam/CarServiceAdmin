@@ -1,10 +1,22 @@
 import api from './axios.instance';
 
 export interface ServiceStation {
-  _id: string;
-  name: string;
-  address: string;
-  ownerId?: string;
+  _id: string
+  name: string
+  address: string
+  ownerId?: string
+  settings?: Record<string, string>
+  latitude?: number
+  longitude?: number
+  workingHours?: string
+  photoUrl?: string
+  logoUrl?: string
+  description?: string
+  phone?: string
+  status?: string
+  isActive?: boolean
+  createdAt?: string
+  updatedAt?: string
 }
 
 export interface StationOwner {

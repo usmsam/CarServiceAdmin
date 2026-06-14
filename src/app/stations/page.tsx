@@ -17,7 +17,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Plus, Trash2, Store, MapPin, Eye } from "lucide-react"
+import { Plus, Trash2, Store, MapPin, Eye, Phone, Clock3, Fingerprint, CalendarClock } from "lucide-react"
 import { motion } from "framer-motion"
 
 export default function StationsPage() {
@@ -106,6 +106,98 @@ export default function StationsPage() {
         <div className="flex items-center gap-2 text-slate-500">
           <MapPin className="h-3 w-3" />
           {row.getValue("address") || "Не указан"}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "ownerId",
+      header: "Владелец",
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2 text-slate-500">
+          <Fingerprint className="h-3 w-3" />
+          <span className="font-mono text-xs break-all">{row.original.ownerId || "—"}</span>
+        </div>
+      ),
+    },
+    {
+      id: "contacts",
+      header: "Контакты",
+      cell: ({ row }) => (
+        <div className="flex flex-col gap-1 text-xs text-slate-500">
+          <div className="flex items-center gap-2">
+            <Phone className="h-3 w-3" />
+            <span>{row.original.phone || "Не указан"}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Clock3 className="h-3 w-3" />
+            <span>{row.original.workingHours || "Не указан"}</span>
+          </div>
+        </div>
+      ),
+    },
+    {
+      accessorKey: "status",
+      header: "Статус",
+      cell: ({ row }) => (
+        <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${
+          row.original.status === "ACTIVE"
+            ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
+            : row.original.status === "PENDING"
+              ? "bg-amber-500/10 text-amber-600 border-amber-500/20"
+              : row.original.status === "BLOCKED"
+                ? "bg-red-500/10 text-red-600 border-red-500/20"
+                : "bg-slate-500/10 text-slate-600 border-slate-200"
+        }`}>
+          {row.original.status || "—"}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "isActive",
+      header: "Активно",
+      cell: ({ row }) => (
+        <span className={row.original.isActive ? "text-emerald-600 font-medium" : "text-slate-500"}>
+          {row.original.isActive ? "Да" : "Нет"}
+        </span>
+      ),
+    },
+    {
+      id: "coordinates",
+      header: "Координаты",
+      cell: ({ row }) => (
+        <div className="text-xs text-slate-500">
+          {row.original.latitude != null && row.original.longitude != null
+            ? `${row.original.latitude}, ${row.original.longitude}`
+            : "Не указаны"}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "description",
+      header: "Описание",
+      cell: ({ row }) => (
+        <div className="max-w-[240px] truncate text-slate-500" title={row.original.description || ""}>
+          {row.original.description || "—"}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "createdAt",
+      header: "Создано",
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2 text-slate-500 text-xs">
+          <CalendarClock className="h-3 w-3" />
+          {row.original.createdAt ? new Date(row.original.createdAt).toLocaleString("ru-RU") : "—"}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "updatedAt",
+      header: "Обновлено",
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2 text-slate-500 text-xs">
+          <CalendarClock className="h-3 w-3" />
+          {row.original.updatedAt ? new Date(row.original.updatedAt).toLocaleString("ru-RU") : "—"}
         </div>
       ),
     },
