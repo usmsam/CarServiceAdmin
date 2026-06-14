@@ -3,9 +3,7 @@
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Activity, Car, CreditCard, ShoppingBag, TrendingUp, Users, DollarSign, Wrench, Store } from "lucide-react"
-import { OrdersService, Order } from "@/api/orders.service"
-import { UsersService } from "@/api/users.service"
-import { StationsService } from "@/api/stations.service"
+import { BackofficeDashboardResponse, BackofficeService } from "@/api/backoffice.service"
 import { motion } from "framer-motion"
 import { useUserStore } from "@/store/user.store"
 import { 
@@ -33,36 +31,14 @@ const COLORS = ['#3b82f6', '#6366f1', '#8b5cf6', '#a855f7', '#d946ef', '#ec4899'
 export default function DashboardPage() {
   const { user } = useUserStore()
   const [loading, setLoading] = useState(true)
-  const [stats, setStats] = useState<any>(null)
-  const [orders, setOrders] = useState<Order[]>([])
-  const [platformData, setPlatformData] = useState<any>(null)
+  const [dashboard, setDashboard] = useState<BackofficeDashboardResponse | null>(null)
 
   useEffect(() => {
     const fetchData = async () => {
       if (!user) return
       setLoading(true)
       try {
-        if (user.role === 'SUPERADMIN') {
-          const [statsRes, ordersRes, usersRes, stationsRes] = await Promise.all([
-            OrdersService.getGlobalStats(),
-            OrdersService.getOrders(),
-            UsersService.getUsers(undefined),
-            StationsService.getStations()
-          ])
-          setStats(statsRes)
-          setOrders(ordersRes)
-          setPlatformData({
-            totalUsers: usersRes.length,
-            totalStations: stationsRes.length
-          })
-        } else {
-          const [statsRes, ordersRes] = await Promise.all([
-            OrdersService.getStats(),
-            OrdersService.getOrders()
-          ])
-          setStats(statsRes)
-          setOrders(ordersRes)
-        }
+        setDashboard(await BackofficeService.getDashboard())
       } catch (error) {
         console.error("Не удалось загрузить данные для дашборда", error)
       } finally {
@@ -72,7 +48,7 @@ export default function DashboardPage() {
     fetchData()
   }, [user])
 
-  if (loading || !stats) {
+  if (loading || !dashboard) {
     return (
       <div className="flex flex-col items-center justify-center h-[60vh] gap-4">
         <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
@@ -82,30 +58,28 @@ export default function DashboardPage() {
   }
 
   const isSuperAdmin = user?.role === 'SUPERADMIN'
-  const totalOrders = orders.length
-  const totalRevenue = orders.reduce((sum, o) => sum + (o.totalAmount || 0), 0)
-  const avgCheck = totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0
+  const { summary, charts, rankings, recentOrders } = dashboard
 
   const topCards = isSuperAdmin ? [
     {
-      title: "Выручка (Платформа)",
-      value: totalRevenue.toLocaleString() + " сум",
+      title: "Общая сумма",
+      value: summary.totalRevenue.toLocaleString() + " сум",
       icon: DollarSign,
       color: "text-emerald-500",
       bg: "bg-emerald-500/10",
-      desc: "Оборот всех филиалов"
+      desc: "Сумма по всем заказам"
     },
     {
-      title: "Активных СТО",
-      value: platformData?.totalStations.toString() || "0",
-      icon: Store,
+      title: "Закрытые заказы",
+      value: summary.closedRevenue.toLocaleString() + " сум",
+      icon: CreditCard,
       color: "text-blue-500",
       bg: "bg-blue-500/10",
-      desc: "Подключено к системе"
+      desc: "Сумма по заказам со статусом CLOSED"
     },
     {
       title: "Всего заказов",
-      value: totalOrders.toString(),
+      value: summary.totalOrders.toString(),
       icon: ShoppingBag,
       color: "text-indigo-500",
       bg: "bg-indigo-500/10",
@@ -113,7 +87,7 @@ export default function DashboardPage() {
     },
     {
       title: "Пользователей",
-      value: platformData?.totalUsers.toString() || "0",
+      value: summary.totalUsers.toString(),
       icon: Users,
       color: "text-amber-500",
       bg: "bg-amber-500/10",
@@ -122,7 +96,7 @@ export default function DashboardPage() {
   ] : [
     {
       title: "Выручка СТО",
-      value: totalRevenue.toLocaleString() + " сум",
+      value: summary.totalRevenue.toLocaleString() + " сум",
       icon: DollarSign,
       color: "text-emerald-500",
       bg: "bg-emerald-500/10",
@@ -130,7 +104,7 @@ export default function DashboardPage() {
     },
     {
       title: "Средний чек",
-      value: avgCheck.toLocaleString() + " сум",
+      value: "0 сум",
       icon: CreditCard,
       color: "text-blue-500",
       bg: "bg-blue-500/10",
@@ -138,7 +112,7 @@ export default function DashboardPage() {
     },
     {
       title: "Всего заказов",
-      value: totalOrders.toString(),
+      value: summary.totalOrders.toString(),
       icon: ShoppingBag,
       color: "text-indigo-500",
       bg: "bg-indigo-500/10",
@@ -146,7 +120,7 @@ export default function DashboardPage() {
     },
     {
       title: "Мастеров",
-      value: stats.mastersStats?.length.toString() || "0",
+      value: "0",
       icon: Users,
       color: "text-amber-500",
       bg: "bg-amber-500/10",
@@ -219,7 +193,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="p-2 md:p-6 pt-6 md:pt-10 h-[300px] md:h-[400px]">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={stats.dailyStats}>
+              <AreaChart data={charts.dailyStats}>
                 <defs>
                   <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.1}/>
@@ -228,7 +202,7 @@ export default function DashboardPage() {
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                 <XAxis 
-                  dataKey="_id" 
+                  dataKey="date" 
                   axisLine={false} 
                   tickLine={false} 
                   tick={{ fontSize: 12, fill: '#64748b', fontWeight: 500 }} 
@@ -256,7 +230,7 @@ export default function DashboardPage() {
                 />
                 <Area 
                   type="monotone" 
-                  dataKey="count" 
+                  dataKey="ordersCount" 
                   stroke="#6366f1" 
                   strokeWidth={2}
                   strokeDasharray="5 5"
@@ -282,10 +256,10 @@ export default function DashboardPage() {
             <CardContent className="p-4 lg:p-6 flex-1">
               <div className="h-[220px] lg:h-[250px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={stats.servicesStats} layout="vertical">
+                  <BarChart data={rankings.services} layout="vertical">
                     <XAxis type="number" hide />
                     <YAxis 
-                      dataKey="_id" 
+                      dataKey="title" 
                       type="category" 
                       width={100} 
                       axisLine={false} 
@@ -297,7 +271,7 @@ export default function DashboardPage() {
                       contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                     />
                     <Bar dataKey="count" radius={[0, 4, 4, 0]}>
-                      {stats.servicesStats.map((entry: any, index: number) => (
+                      {rankings.services.map((entry, index: number) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Bar>
@@ -323,7 +297,7 @@ export default function DashboardPage() {
             <CardContent className="p-4 lg:p-6 flex-1">
               <div className="h-[220px] lg:h-[250px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={isSuperAdmin ? stats.stationsStats : stats.mastersStats}>
+                  <BarChart data={isSuperAdmin ? rankings.stations : []}>
                     <XAxis 
                       dataKey="name" 
                       axisLine={false} 
@@ -341,7 +315,7 @@ export default function DashboardPage() {
                 </ResponsiveContainer>
               </div>
               <div className="mt-6 grid grid-cols-2 md:grid-cols-3 gap-4">
-                {(isSuperAdmin ? stats.stationsStats : stats.mastersStats).slice(0, 3).map((item: any, i: number) => (
+                {(isSuperAdmin ? rankings.stations : []).slice(0, 3).map((item, i: number) => (
                   <div key={i} className="p-3 bg-slate-50 rounded-xl border border-slate-100">
                     <p className="text-[10px] font-bold text-slate-400 uppercase truncate">{item.name}</p>
                     <p className="text-sm font-black text-slate-900 mt-1">{item.revenue.toLocaleString()} сум</p>
@@ -362,16 +336,16 @@ export default function DashboardPage() {
               <CardTitle className="text-base lg:text-lg font-bold text-slate-900">Последняя активность</CardTitle>
             </CardHeader>
             <CardContent className="p-0 flex-1">
-              {orders.length === 0 ? (
+              {recentOrders.length === 0 ? (
                 <div className="p-12 text-center text-slate-400 flex flex-col items-center gap-2">
                   <ShoppingBag className="h-10 w-10 opacity-20" />
                   Заказов пока нет
                 </div>
               ) : (
                 <div className="divide-y divide-slate-100 overflow-x-auto">
-                  {orders.slice(0, 6).map((order, i) => (
+                  {recentOrders.map((order) => (
                     <div 
-                      key={order._id} 
+                      key={order.id} 
                       className="p-4 flex items-center justify-between hover:bg-slate-50/50 transition-colors group min-w-[300px]"
                     >
                       <div className="flex items-center gap-3 md:gap-4">
@@ -379,7 +353,7 @@ export default function DashboardPage() {
                           <ShoppingBag className="h-4 w-4 md:h-5 md:w-5" />
                         </div>
                         <div className="min-w-0">
-                          <div className="font-bold text-slate-900 text-xs md:text-sm truncate">#{order._id.slice(-6).toUpperCase()}</div>
+                          <div className="font-bold text-slate-900 text-xs md:text-sm truncate">#{order.id.slice(-6).toUpperCase()}</div>
                           <div className="text-[9px] md:text-[10px] text-slate-400 font-bold uppercase tracking-tighter">
                             {new Date(order.createdAt).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                           </div>
@@ -416,18 +390,18 @@ export default function DashboardPage() {
             <CardContent className="p-6 flex-1 flex flex-col items-center justify-center">
               <div className="h-[220px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
+                    <PieChart>
                     <Pie
-                      data={stats.brandsStats || []}
+                      data={rankings.brands}
                       cx="50%"
                       cy="50%"
                       innerRadius={60}
                       outerRadius={80}
                       paddingAngle={5}
                       dataKey="count"
-                      nameKey="_id"
+                      nameKey="brand"
                     >
-                      {stats.brandsStats?.map((entry: any, index: number) => (
+                      {rankings.brands.map((entry, index: number) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
@@ -438,10 +412,10 @@ export default function DashboardPage() {
                 </ResponsiveContainer>
               </div>
               <div className="grid grid-cols-2 gap-x-6 gap-y-2 mt-6">
-                {stats.brandsStats?.slice(0, 4).map((b: any, i: number) => (
+                {rankings.brands.slice(0, 4).map((b, i: number) => (
                   <div key={i} className="flex items-center gap-2">
                     <div className="h-2 w-2 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                    <span className="text-[10px] font-bold text-slate-500 uppercase truncate max-w-[80px]">{b._id}</span>
+                    <span className="text-[10px] font-bold text-slate-500 uppercase truncate max-w-[80px]">{b.brand}</span>
                   </div>
                 ))}
               </div>

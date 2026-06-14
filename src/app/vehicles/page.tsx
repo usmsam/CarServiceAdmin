@@ -52,7 +52,7 @@ export default function VehiclesPage() {
               {formatOwner(row.original.ownerId)}
             </span>
           </div>
-          <span className="text-xs text-slate-500">{formatOwnerMeta(row.original.ownerId)}</span>
+          <span className="text-xs text-slate-500">{formatOwnerId(row.original.ownerId)}</span>
         </div>
       ),
     },
@@ -158,8 +158,9 @@ export default function VehiclesPage() {
     return owner.fullName || owner.name || owner._id || "—"
   }
 
-  function formatOwnerMeta(owner: Vehicle["ownerId"]) {
-    if (!owner || typeof owner === "string") return ""
-    return [owner.phone, owner._id].filter(Boolean).join(" • ")
+  function formatOwnerId(owner: Vehicle["ownerId"]) {
+    if (!owner) return ""
+    if (typeof owner === "string") return owner
+    return owner._id || ""
   }
 }

@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, ShoppingCart, Users, Wrench, LogOut, Car, Store, Layers, X } from "lucide-react"
+import { LayoutDashboard, ShoppingCart, Users, LogOut, Car, Store, X } from "lucide-react"
 import { useUserStore } from "@/store/user.store"
 
 interface SidebarProps {
@@ -36,18 +36,6 @@ export function Sidebar({ onClose }: SidebarProps) {
       label: "Пользователи",
       icon: Users,
       href: "/users",
-      show: true,
-    },
-    {
-      label: "Категории услуг",
-      icon: Layers,
-      href: "/categories",
-      show: true,
-    },
-    {
-      label: "Справочник работ",
-      icon: Wrench,
-      href: "/catalog",
       show: true,
     },
     {

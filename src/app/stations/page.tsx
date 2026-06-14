@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Link from "next/link"
 import { DataTable } from "@/components/ui/data-table/data-table"
 import { StationsService, ServiceStation } from "@/api/stations.service"
 import { ColumnDef } from "@tanstack/react-table"
@@ -16,7 +17,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Plus, Trash2, Edit, Store, MapPin } from "lucide-react"
+import { Plus, Trash2, Store, MapPin, Eye } from "lucide-react"
 import { motion } from "framer-motion"
 
 export default function StationsPage() {
@@ -114,17 +115,13 @@ export default function StationsPage() {
       cell: ({ row }) => {
         return (
           <div className="flex justify-end items-center gap-2 pr-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/20 transition-colors"
-              onClick={() => {
-                setSelectedStation(row.original)
-                setOpenEdit(true)
-              }}
+            <Link
+              href={`/stations/${row.original._id}`}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-blue-400 hover:text-blue-300 hover:bg-blue-500/20 transition-colors"
+              aria-label={`Открыть СТО ${row.original.name}`}
             >
-              <Edit className="h-4 w-4" />
-            </Button>
+              <Eye className="h-4 w-4" />
+            </Link>
             <Button
               variant="ghost"
               size="icon"
