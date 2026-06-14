@@ -1,0 +1,29 @@
+name: Admin Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+            cd ~/projects/avtolog-admin
+            git fetch origin
+            git reset --hard origin/main
+            npm ci
+            npm run build
+            pm2 restart avtolog-admin
+            pm2 save
+            curl -sf https://admin.avtologcrm.uz > /dev/null
+            echo "Deploy complete"
