@@ -25,5 +25,6 @@ jobs:
             npm run build
             pm2 restart avtolog-admin
             pm2 save
-            curl -sf https://admin.avtologcrm.uz > /dev/null
+            sleep 5
+            curl --retry 10 --retry-delay 3 --retry-all-errors -sf https://admin.avtologcrm.uz > /dev/null
             echo "Deploy complete"
