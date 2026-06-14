@@ -1,11 +1,11 @@
 "use client"
 
-import { ReactNode, useEffect, useState } from "react"
+import { ReactNode, startTransition, useEffect, useState } from "react"
 import { Sidebar } from "./Sidebar"
 import { useUserStore } from "@/store/user.store"
 import { usePathname, useRouter } from "next/navigation"
 import { AnimatePresence, motion } from "framer-motion"
-import { Menu, X } from "lucide-react"
+import { Menu } from "lucide-react"
 
 export function AppLayout({ children }: { children: ReactNode }) {
   const { isAuthenticated, user, logout } = useUserStore()
@@ -15,20 +15,24 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
   useEffect(() => {
-    setIsMounted(true)
+    startTransition(() => {
+      setIsMounted(true)
+    })
   }, [])
 
   // Close sidebar when route changes
   useEffect(() => {
-    setIsSidebarOpen(false)
+    startTransition(() => {
+      setIsSidebarOpen(false)
+    })
   }, [pathname])
 
   useEffect(() => {
     if (isMounted) {
       if (!isAuthenticated && !pathname.startsWith('/auth')) {
         router.push('/auth')
-      } else if (isAuthenticated && user?.role !== 'SUPERADMIN' && user?.role !== 'OWNER' && !pathname.startsWith('/auth')) {
-        // Ограничение: пускаем только SUPERADMIN и OWNER
+      } else if (isAuthenticated && user?.role !== 'SUPERADMIN' && !pathname.startsWith('/auth')) {
+        // Backoffice доступен только SUPERADMIN
         logout()
         router.push('/auth')
       }
@@ -46,7 +50,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
     )
   }
 
-  if (!isAuthenticated || (user?.role !== 'SUPERADMIN' && user?.role !== 'OWNER')) return null
+  if (!isAuthenticated || user?.role !== 'SUPERADMIN') return null
 
   return (
     <div className="flex h-screen overflow-hidden bg-slate-50 text-slate-900">

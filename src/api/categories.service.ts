@@ -1,30 +1,36 @@
 import api from './axios.instance';
 
+export interface StationRef {
+  _id?: string;
+  name?: string;
+  address?: string;
+}
+
 export interface ServiceCategory {
   _id: string;
   name: string;
   order: number;
-  stationId?: any;
+  stationId?: string | StationRef | null;
 }
 
 export const ServiceCategoriesService = {
   getCategories: async (): Promise<ServiceCategory[]> => {
-    const { data } = await api.get('/categories');
+    const { data } = await api.get('/backoffice/categories');
     return data;
   },
   getCategoryById: async (id: string): Promise<ServiceCategory> => {
-    const { data } = await api.get(`/categories/${id}`);
+    const { data } = await api.get(`/backoffice/categories/${id}`);
     return data;
   },
   createCategory: async (category: Partial<ServiceCategory>): Promise<ServiceCategory> => {
-    const { data } = await api.post('/categories', category);
+    const { data } = await api.post('/backoffice/categories', category);
     return data;
   },
   updateCategory: async (id: string, category: Partial<ServiceCategory>): Promise<ServiceCategory> => {
-    const { data } = await api.patch(`/categories/${id}`, category);
+    const { data } = await api.patch(`/backoffice/categories/${id}`, category);
     return data;
   },
   deleteCategory: async (id: string): Promise<void> => {
-    await api.delete(`/categories/${id}`);
+    await api.delete(`/backoffice/categories/${id}`);
   }
 };

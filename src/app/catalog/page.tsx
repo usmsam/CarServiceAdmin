@@ -39,6 +39,11 @@ export default function CatalogPage() {
     title: "",
   })
 
+  const getCategoryIdValue = (categoryId?: CatalogItem["categoryId"]) => {
+    if (!categoryId || categoryId === "none") return undefined
+    return typeof categoryId === "string" ? categoryId : categoryId._id
+  }
+
   const fetchData = async () => {
     setLoading(true)
     try {
@@ -63,9 +68,10 @@ export default function CatalogPage() {
 
   const handleCreateItem = async () => {
     try {
+      const categoryId = getCategoryIdValue(selectedItem.categoryId)
       const payload = {
         title: selectedItem.title,
-        categoryId: selectedItem.categoryId && selectedItem.categoryId !== "none" ? selectedItem.categoryId : undefined
+        categoryId,
       }
       await CatalogService.createItem(payload)
       setOpenCreate(false)
@@ -79,9 +85,9 @@ export default function CatalogPage() {
   const handleUpdateItem = async () => {
     if (!selectedItem._id) return
     try {
-      const catId = selectedItem.categoryId?._id || selectedItem.categoryId;
+      const categoryId = getCategoryIdValue(selectedItem.categoryId)
       await CatalogService.updateItem(selectedItem._id, {
-        categoryId: catId && catId !== "none" ? catId : undefined,
+        categoryId,
         title: selectedItem.title,
       })
       setOpenEdit(false)
@@ -209,8 +215,8 @@ export default function CatalogPage() {
               </div>
               <div className="grid gap-2">
                 <Label>Категория</Label>
-                <Select
-                  value={typeof selectedItem.categoryId === 'object' ? selectedItem.categoryId._id : (selectedItem.categoryId || "none")}
+              <Select
+                  value={getCategoryIdValue(selectedItem.categoryId) || "none"}
                   onValueChange={(val: string | null) => {
                     setSelectedItem(prev => ({ ...prev, categoryId: val === "none" ? undefined : val }))
                   }}
@@ -265,7 +271,7 @@ export default function CatalogPage() {
             <div className="grid gap-2">
               <Label>Категория</Label>
               <Select
-                value={typeof selectedItem.categoryId === 'object' ? selectedItem.categoryId._id : (selectedItem.categoryId || "none")}
+                value={getCategoryIdValue(selectedItem.categoryId) || "none"}
                 onValueChange={(val: string | null) => {
                   setSelectedItem(prev => ({ ...prev, categoryId: val === "none" ? undefined : val }))
                 }}

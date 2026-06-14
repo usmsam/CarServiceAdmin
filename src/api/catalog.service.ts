@@ -1,27 +1,34 @@
 import api from './axios.instance';
 
+export interface CatalogCategoryRef {
+  _id?: string;
+  name?: string;
+}
+
 export interface CatalogItem {
   _id: string;
-  categoryId: any;
+  categoryId: string | CatalogCategoryRef | null;
   title: string;
   price: number;
-  stationId?: any;
+  stationId?: string | { _id?: string; name?: string; address?: string } | null;
 }
 
 export const CatalogService = {
   getItems: async (stationId?: string): Promise<CatalogItem[]> => {
-    const { data } = await api.get('/catalogs', { params: { stationId } });
+    const { data } = await api.get('/backoffice/catalog', {
+      params: { stationId },
+    });
     return data;
   },
   createItem: async (item: Partial<CatalogItem>): Promise<CatalogItem> => {
-    const { data } = await api.post('/catalogs', item);
+    const { data } = await api.post('/backoffice/catalog', item);
     return data;
   },
   updateItem: async (id: string, item: Partial<CatalogItem>): Promise<CatalogItem> => {
-    const { data } = await api.patch(`/catalogs/${id}`, item);
+    const { data } = await api.patch(`/backoffice/catalog/${id}`, item);
     return data;
   },
   deleteItem: async (id: string): Promise<void> => {
-    await api.delete(`/catalogs/${id}`);
+    await api.delete(`/backoffice/catalog/${id}`);
   }
 };

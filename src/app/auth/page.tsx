@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, Suspense } from 'react'
+import { Suspense, startTransition, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useUserStore } from '@/store/user.store'
 import { AuthService } from '@/api/auth.service'
@@ -28,17 +28,21 @@ function AuthContent() {
       try {
         localStorage.setItem('token', authToken)
         const user = await AuthService.getMe()
-        if (user.role !== 'SUPERADMIN' && user.role !== 'OWNER') {
+        if (user.role !== 'SUPERADMIN') {
           localStorage.removeItem('token')
-          setError('Доступ запрещен. Требуются права администратора.')
-          setInitLoading(false)
+          setError('Доступ запрещен. Требуются права backoffice.')
+          startTransition(() => {
+            setInitLoading(false)
+          })
           return
         }
         login(user, authToken)
         router.push('/')
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Не удалось авторизоваться по токену:', error)
-        setInitLoading(false)
+        startTransition(() => {
+          setInitLoading(false)
+        })
       }
     }
 
@@ -49,7 +53,9 @@ function AuthContent() {
       if (existingToken) {
         authenticate(existingToken)
       } else {
-        setInitLoading(false)
+        startTransition(() => {
+          setInitLoading(false)
+        })
       }
     }
   }, [searchParams, router, login])
@@ -66,9 +72,9 @@ function AuthContent() {
       if (token) {
         localStorage.setItem('token', token)
         const user = await AuthService.getMe()
-        if (user.role !== 'SUPERADMIN' && user.role !== 'OWNER') {
+        if (user.role !== 'SUPERADMIN') {
           localStorage.removeItem('token')
-          setError('Доступ запрещен. Требуются права администратора.')
+          setError('Доступ запрещен. Требуются права backoffice.')
           setLoading(false)
           return
         }
@@ -77,7 +83,7 @@ function AuthContent() {
       } else {
         setError('Не удалось получить токен авторизации')
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Login error:', err)
       setError('Неверный логин или пароль')
     } finally {

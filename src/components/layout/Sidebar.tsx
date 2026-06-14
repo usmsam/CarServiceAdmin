@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, ShoppingCart, Users, Wrench, Settings, LogOut, Car, Store, Layers, X } from "lucide-react"
+import { LayoutDashboard, ShoppingCart, Users, Wrench, LogOut, Car, Store, Layers, X } from "lucide-react"
 import { useUserStore } from "@/store/user.store"
 
 interface SidebarProps {
@@ -56,18 +56,12 @@ export function Sidebar({ onClose }: SidebarProps) {
       href: "/stations",
       show: user?.role === 'SUPERADMIN',
     },
-    {
-      label: "Настройки",
-      icon: Settings,
-      href: "/settings",
-      show: true,
-    },
   ]
 
   return (
     <div className="flex h-full w-64 flex-col bg-white border-r border-slate-200 text-slate-900 relative z-20 shadow-sm">
       <div className="flex h-16 items-center justify-between px-6 py-4 border-b border-slate-100">
-        <h1 className="text-xl font-bold tracking-wider bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">AvtoLog</h1>
+        <h1 className="text-xl font-bold tracking-wider bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">AvtoLog Backoffice</h1>
         {onClose && (
           <button 
             onClick={onClose}
@@ -105,7 +99,7 @@ export function Sidebar({ onClose }: SidebarProps) {
       
       <div className="border-t border-slate-100 p-4 bg-slate-50/50">
         <div className="mb-4 px-3 flex flex-col">
-          <span className="text-sm font-medium truncate text-slate-900">{user?.fullName || "Суперадмин"}</span>
+          <span className="text-sm font-medium truncate text-slate-900">{user?.fullName || "Backoffice"}</span>
           <span className="text-xs text-blue-600 font-medium uppercase">{user?.role}</span>
         </div>
         <button

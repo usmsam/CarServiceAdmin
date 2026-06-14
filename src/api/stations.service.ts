@@ -9,18 +9,18 @@ export interface ServiceStation {
 
 export const StationsService = {
   getStations: async (): Promise<ServiceStation[]> => {
-    const { data } = await api.get('/stations');
+    const { data } = await api.get('/backoffice/stations');
     return data;
   },
   createStation: async (station: Partial<ServiceStation>): Promise<ServiceStation> => {
-    const { data } = await api.post('/stations', station);
+    const { data } = await api.post('/backoffice/stations', station);
     return data;
   },
   updateStation: async (id: string, station: Partial<ServiceStation>): Promise<ServiceStation> => {
-    const { data } = await api.patch(`/stations/${id}`, station);
+    const { data } = await api.patch(`/backoffice/stations/${id}`, station);
     return data;
   },
   deleteStation: async (id: string): Promise<void> => {
-    await api.delete(`/stations/${id}`);
+    await api.delete(`/backoffice/stations/${id}`);
   }
 };

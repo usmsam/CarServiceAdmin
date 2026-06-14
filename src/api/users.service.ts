@@ -1,13 +1,49 @@
 import api from './axios.instance';
-import { User } from '@/store/user.store';
+import { Role } from '@/store/user.store';
+
+type RefEntity =
+  | {
+      _id?: string;
+      fullName?: string;
+      phone?: string;
+      username?: string;
+      name?: string;
+      address?: string;
+    }
+  | string
+  | null;
+
+export interface AdminUser {
+  _id: string;
+  telegramId?: string;
+  username?: string;
+  password?: string;
+  fullName: string;
+  phone?: string;
+  role: Role;
+  stationId?: RefEntity;
+  language?: string;
+  status?: 'PENDING' | 'ACTIVE' | 'BLOCKED';
+  lastTelegramLoginAt?: string;
+  isActive?: boolean;
+  hasCredentials?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
 
 export const UsersService = {
-  getUsers: async (stationId?: string): Promise<User[]> => {
-    const { data } = await api.get('/users', { params: { stationId } });
+  getUsers: async (stationId?: string): Promise<AdminUser[]> => {
+    const { data } = await api.get('/backoffice/users', {
+      params: { stationId },
+    });
     return data;
   },
-  updateUserRole: async (id: string, role: string): Promise<User> => {
-    const { data } = await api.patch(`/users/${id}`, { role });
+  getUserById: async (id: string): Promise<AdminUser> => {
+    const { data } = await api.get(`/backoffice/users/${id}`);
+    return data;
+  },
+  updateUserRole: async (id: string, role: Role): Promise<AdminUser> => {
+    const { data } = await api.patch(`/backoffice/users/${id}`, { role });
     return data;
   }
 };

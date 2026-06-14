@@ -8,7 +8,7 @@ export const AuthService = {
   },
   // In a real app, login via bot might just send token via URL,
   // but if we need a login endpoint:
-  login: async (credentials: any) => {
+  login: async (credentials: { username: string; password: string }) => {
     const { data } = await api.post('/auth/login', credentials);
     return data;
   }
