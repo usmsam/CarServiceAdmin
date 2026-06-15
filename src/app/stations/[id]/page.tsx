@@ -22,6 +22,83 @@ import {
   StationsService,
 } from "@/api/stations.service"
 
+const WEEKDAYS = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'] as const
+
+const normalizeWorkingHoursByDay = (
+  raw: Array<{
+    dayOfWeek: number
+    isWorkingDay: boolean
+    openTime?: string
+    closeTime?: string
+  }> = [],
+) => {
+  const map = new Map<
+    number,
+    {
+      dayOfWeek: number
+      isWorkingDay: boolean
+      openTime?: string
+      closeTime?: string
+    }
+  >()
+
+  for (const item of raw) {
+    if (
+      typeof item?.dayOfWeek !== "number" ||
+      item.dayOfWeek < 0 ||
+      item.dayOfWeek > 6
+    ) {
+      continue
+    }
+
+    map.set(item.dayOfWeek, {
+      dayOfWeek: item.dayOfWeek,
+      isWorkingDay: Boolean(item.isWorkingDay),
+      openTime: typeof item.openTime === "string" ? item.openTime : undefined,
+      closeTime: typeof item.closeTime === "string" ? item.closeTime : undefined,
+    })
+  }
+
+  const result = []
+  for (let dayOfWeek = 0; dayOfWeek <= 6; dayOfWeek++) {
+    result.push(
+      map.get(dayOfWeek) ?? {
+        dayOfWeek,
+        isWorkingDay: false,
+        openTime: "09:00",
+        closeTime: "18:00",
+      },
+    )
+  }
+
+  return result
+}
+
+const buildWorkingHoursSummary = (
+  station: {
+    workingHoursByDay?: Array<{
+      dayOfWeek: number
+      isWorkingDay: boolean
+      openTime?: string
+      closeTime?: string
+    }>
+    workingHours?: string
+  },
+) => {
+  if (!station.workingHoursByDay || station.workingHoursByDay.length === 0) {
+    return station.workingHours || "—"
+  }
+
+  return normalizeWorkingHoursByDay(station.workingHoursByDay)
+    .map((day) => {
+      const label = WEEKDAYS[day.dayOfWeek] || `День ${day.dayOfWeek}`
+      if (!day.isWorkingDay) return `${label}: выходной`
+      if (!day.openTime || !day.closeTime) return `${label}: —`
+      return `${label}: ${day.openTime}-${day.closeTime}`
+    })
+    .join(", ")
+}
+
 type TabKey = "main" | "categories"
 
 export default function StationDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -134,7 +211,7 @@ export default function StationDetailPage({ params }: { params: Promise<{ id: st
                 <InfoCard label="Название" value={station.name} />
                 <InfoCard label="Адрес" value={station.address || "—"} icon={<MapPin className="h-4 w-4 text-slate-400" />} />
                 <InfoCard label="Телефон" value={station.phone || "—"} icon={<Phone className="h-4 w-4 text-slate-400" />} />
-                <InfoCard label="Режим работы" value={station.workingHours || "—"} />
+                <InfoCard label="Режим работы" value={buildWorkingHoursSummary(station)} />
                 <InfoCard label="Описание" value={station.description || "—"} />
                 <InfoCard label="Статус" value={station.status || "—"} />
                 <InfoCard label="Активность" value={station.isActive ? "Да" : "Нет"} />

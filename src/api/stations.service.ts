@@ -9,6 +9,7 @@ export interface ServiceStation {
   latitude?: number
   longitude?: number
   workingHours?: string
+  workingHoursByDay?: StationWorkingHoursByDay[]
   photoUrl?: string
   logoUrl?: string
   description?: string
@@ -64,6 +65,13 @@ export interface StationDetail extends ServiceStation {
   createdAt?: string
   updatedAt?: string
   owner?: StationOwner | null
+}
+
+export interface StationWorkingHoursByDay {
+  dayOfWeek: number;
+  isWorkingDay: boolean;
+  openTime?: string;
+  closeTime?: string;
 }
 
 export interface StationDetailResponse {

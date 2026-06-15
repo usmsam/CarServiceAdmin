@@ -20,6 +20,81 @@ import {
 import { Plus, Trash2, Store, MapPin, Eye, Phone, Clock3, Fingerprint, CalendarClock } from "lucide-react"
 import { motion } from "framer-motion"
 
+const WEEKDAYS = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'] as const
+
+const normalizeWorkingHoursByDay = (
+  raw: Array<{
+    dayOfWeek: number
+    isWorkingDay: boolean
+    openTime?: string
+    closeTime?: string
+  }> = [],
+) => {
+  const map = new Map<
+    number,
+    {
+      dayOfWeek: number
+      isWorkingDay: boolean
+      openTime?: string
+      closeTime?: string
+    }
+  >()
+
+  for (const item of raw) {
+    if (
+      typeof item?.dayOfWeek !== "number" ||
+      item.dayOfWeek < 0 ||
+      item.dayOfWeek > 6
+    ) {
+      continue
+    }
+
+    map.set(item.dayOfWeek, {
+      dayOfWeek: item.dayOfWeek,
+      isWorkingDay: Boolean(item.isWorkingDay),
+      openTime: typeof item.openTime === "string" ? item.openTime : undefined,
+      closeTime: typeof item.closeTime === "string" ? item.closeTime : undefined,
+    })
+  }
+
+  const result = []
+  for (let dayOfWeek = 0; dayOfWeek <= 6; dayOfWeek++) {
+    result.push(
+      map.get(dayOfWeek) ?? {
+        dayOfWeek,
+        isWorkingDay: false,
+        openTime: "09:00",
+        closeTime: "18:00",
+      },
+    )
+  }
+
+  return result
+}
+
+const buildWorkingHoursSummary = (
+  workingHoursByDay?: Array<{
+    dayOfWeek: number
+    isWorkingDay: boolean
+    openTime?: string
+    closeTime?: string
+  }>,
+  fallback?: string,
+) => {
+  if (!Array.isArray(workingHoursByDay) || workingHoursByDay.length === 0) {
+    return fallback || "Не указан"
+  }
+
+  return normalizeWorkingHoursByDay(workingHoursByDay)
+    .map((day) => {
+      const label = WEEKDAYS[day.dayOfWeek] || `День ${day.dayOfWeek}`
+      if (!day.isWorkingDay) return `${label}: выходной`
+      if (!day.openTime || !day.closeTime) return `${label}: —`
+      return `${label}: ${day.openTime}-${day.closeTime}`
+    })
+    .join(", ")
+}
+
 export default function StationsPage() {
   const [data, setData] = useState<ServiceStation[]>([])
   const [loading, setLoading] = useState(true)
@@ -128,10 +203,13 @@ export default function StationsPage() {
             <Phone className="h-3 w-3" />
             <span>{row.original.phone || "Не указан"}</span>
           </div>
-          <div className="flex items-center gap-2">
-            <Clock3 className="h-3 w-3" />
-            <span>{row.original.workingHours || "Не указан"}</span>
-          </div>
+              <div className="flex items-center gap-2">
+                <Clock3 className="h-3 w-3" />
+                <span>{buildWorkingHoursSummary(
+                  row.original.workingHoursByDay,
+                  row.original.workingHours,
+                )}</span>
+              </div>
         </div>
       ),
     },

@@ -94,7 +94,7 @@ export const OrdersService = {
     return data;
   },
   getOrderMedia: async (id: string): Promise<OrderMediaItem[]> => {
-    const { data } = await api.get(`/orders/${id}/media`);
+    const { data } = await api.get(`/backoffice/orders/${id}/media`);
     return Array.isArray(data) ? data : [];
   },
   updateOrderStatus: async (id: string, status: string): Promise<Order> => {
