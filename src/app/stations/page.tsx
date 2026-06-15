@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { DataTable } from "@/components/ui/data-table/data-table"
 import { StationsService, ServiceStation } from "@/api/stations.service"
+import { AdminUser, UsersService } from "@/api/users.service"
 import { ColumnDef } from "@tanstack/react-table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -17,7 +18,20 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Plus, Trash2, Store, MapPin, Eye, Phone, Clock3, Fingerprint, CalendarClock } from "lucide-react"
+import {
+  ArrowRight,
+  CheckCircle2,
+  Plus,
+  Search,
+  Store,
+  MapPin,
+  Eye,
+  Phone,
+  Clock3,
+  Fingerprint,
+  CalendarClock,
+  Trash2,
+} from "lucide-react"
 import { motion } from "framer-motion"
 
 const WEEKDAYS = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'] as const
@@ -101,6 +115,15 @@ export default function StationsPage() {
 
   const [openCreate, setOpenCreate] = useState(false)
   const [openEdit, setOpenEdit] = useState(false)
+  const [ownerSearchLoading, setOwnerSearchLoading] = useState(false)
+  const [ownerSearchError, setOwnerSearchError] = useState("")
+  const [ownerCandidates, setOwnerCandidates] = useState<AdminUser[]>([])
+  const [selectedOwner, setSelectedOwner] = useState<AdminUser | null>(null)
+  const [ownerFilters, setOwnerFilters] = useState({
+    id: "",
+    telegramId: "",
+    phone: "",
+  })
   const [selectedStation, setSelectedStation] = useState<Partial<ServiceStation>>({
     name: "",
     address: "",
@@ -120,15 +143,64 @@ export default function StationsPage() {
     }
   }
 
+  const resetOwnerSelection = () => {
+    setSelectedOwner(null)
+    setOwnerFilters({ id: "", telegramId: "", phone: "" })
+    setOwnerCandidates([])
+    setOwnerSearchError("")
+  }
+
+  const handleSearchOwners = async () => {
+    const hasFilter = Boolean(
+      ownerFilters.id.trim() || ownerFilters.telegramId.trim() || ownerFilters.phone.trim(),
+    )
+    if (!hasFilter) {
+      setOwnerCandidates([])
+      setOwnerSearchError("Укажите хотя бы один фильтр для поиска владельца")
+      return
+    }
+
+    setOwnerSearchLoading(true)
+    setOwnerSearchError("")
+    try {
+      const users = await UsersService.getUsers({
+        id: ownerFilters.id.trim() || undefined,
+        telegramId: ownerFilters.telegramId.trim() || undefined,
+        phone: ownerFilters.phone.trim() || undefined,
+      })
+
+      setOwnerCandidates(users)
+      if (users.length === 0) {
+        setOwnerSearchError("Пользователь по заданным фильтрам не найден")
+      }
+    } catch (error) {
+      console.error("Не удалось найти пользователя", error)
+      setOwnerSearchError("Не удалось выполнить поиск по пользователям")
+      setOwnerCandidates([])
+    } finally {
+      setOwnerSearchLoading(false)
+    }
+  }
+
+  const selectOwner = (owner: AdminUser) => {
+    setSelectedOwner(owner)
+    setSelectedStation((prev) => ({ ...prev, ownerId: owner._id }))
+    setOwnerSearchError("")
+  }
+
   useEffect(() => {
     fetchData()
   }, [])
 
   const handleCreateStation = async () => {
     try {
-      await StationsService.createStation(selectedStation)
+      await StationsService.createStation({
+        ...selectedStation,
+        ownerId: selectedOwner?._id || selectedStation.ownerId,
+      })
       setOpenCreate(false)
       setSelectedStation({ name: "", address: "", ownerId: "" })
+      resetOwnerSelection()
       fetchData()
     } catch (error) {
       console.error("Не удалось создать СТО", error)
@@ -318,14 +390,26 @@ export default function StationsPage() {
           <p className="text-sm text-slate-500 mt-1">Управление филиалами и локациями автосервисов.</p>
         </div>
         
-        <Dialog open={openCreate} onOpenChange={setOpenCreate}>
+        <Dialog
+          open={openCreate}
+          onOpenChange={(open) => {
+            setOpenCreate(open)
+            if (!open) {
+              setSelectedStation({ name: "", address: "", ownerId: "" })
+              resetOwnerSelection()
+            } else {
+              setSelectedStation({ name: "", address: "", ownerId: "" })
+              resetOwnerSelection()
+            }
+          }}
+        >
           <DialogTrigger render={
             <Button className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-500/20 border-0">
               <Plus className="h-4 w-4 mr-2" />
               Добавить СТО
             </Button>
           } />
-          <DialogContent className="bg-white backdrop-blur-xl border-slate-200 text-slate-900 sm:max-w-[425px]">
+          <DialogContent className="bg-white backdrop-blur-xl border-slate-200 text-slate-900 sm:max-w-[760px]">
             <DialogHeader>
               <DialogTitle>Добавить новое СТО</DialogTitle>
               <DialogDescription className="text-slate-500">
@@ -350,23 +434,130 @@ export default function StationsPage() {
                 />
               </div>
 
-              <div className="grid gap-2">
-                <Label>ID Владельца (User ObjectId)</Label>
-                <Input
-                  value={selectedStation.ownerId || ""}
-                  onChange={(e) => setSelectedStation(prev => ({ ...prev, ownerId: e.target.value }))}
-                  placeholder="Например: 662a1c..."
-                  className="bg-slate-50 border-slate-200 focus:border-emerald-500"
-                />
+              <div className="space-y-2 border border-slate-200 rounded-xl p-3">
+                <Label className="text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                  Поиск владельца
+                </Label>
+                <div className="grid gap-2">
+                  <Input
+                    value={ownerFilters.id}
+                    onChange={(e) =>
+                      setOwnerFilters((prev) => ({ ...prev, id: e.target.value }))
+                    }
+                    placeholder="User ID (_id)"
+                    className="bg-slate-50 border-slate-200 focus:border-emerald-500"
+                  />
+                  <Input
+                    value={ownerFilters.telegramId}
+                    onChange={(e) =>
+                      setOwnerFilters((prev) => ({ ...prev, telegramId: e.target.value }))
+                    }
+                    placeholder="Telegram ID"
+                    className="bg-slate-50 border-slate-200 focus:border-emerald-500"
+                  />
+                  <Input
+                    value={ownerFilters.phone}
+                    onChange={(e) =>
+                      setOwnerFilters((prev) => ({ ...prev, phone: e.target.value }))
+                    }
+                    placeholder="Телефон"
+                    className="bg-slate-50 border-slate-200 focus:border-emerald-500"
+                  />
+                </div>
+                <div className="flex justify-between items-center gap-2">
+                  <div className="text-xs text-slate-500">
+                    {selectedOwner
+                      ? `Выбранный владелец: ${selectedOwner.fullName || selectedOwner._id}`
+                      : "Сначала найдите владельца и выберите его"}
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-8"
+                    onClick={handleSearchOwners}
+                    disabled={ownerSearchLoading}
+                  >
+                    <Search className="h-3 w-3 mr-2" />
+                    {ownerSearchLoading ? "Поиск..." : "Найти"}
+                  </Button>
+                </div>
+
+                {ownerSearchError ? <div className="text-sm text-red-500">{ownerSearchError}</div> : null}
+                {ownerCandidates.length > 0 && (
+                  <div className="border border-slate-200 rounded-lg max-h-56 overflow-auto">
+                    <table className="w-full text-xs">
+                      <thead className="sticky top-0 bg-slate-100 text-slate-600">
+                        <tr>
+                          <th className="text-left p-2">ID</th>
+                          <th className="text-left p-2">ФИО</th>
+                          <th className="text-left p-2">Телефон</th>
+                          <th className="text-left p-2">Telegram</th>
+                          <th className="text-left p-2">Роль</th>
+                          <th className="text-left p-2">Выбрать</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {ownerCandidates.map((owner) => (
+                          <tr
+                            key={owner._id}
+                            className="border-t border-slate-200 hover:bg-slate-50"
+                          >
+                            <td className="p-2 font-mono text-[11px] text-slate-500 break-all">
+                              {owner._id}
+                            </td>
+                            <td className="p-2 text-slate-700">{owner.fullName}</td>
+                            <td className="p-2 text-slate-700">{owner.phone || "—"}</td>
+                            <td className="p-2 text-slate-700">{owner.telegramId || "—"}</td>
+                            <td className="p-2 text-slate-700">{owner.role}</td>
+                            <td className="p-2">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="h-7 gap-1"
+                                onClick={() => selectOwner(owner)}
+                              >
+                                <CheckCircle2 className="h-3.5 w-3.5" />
+                                Выбрать
+                              </Button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                {selectedOwner ? (
+                  <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 px-3 py-2 text-xs text-emerald-700">
+                    <div className="flex items-center gap-2">
+                      <ArrowRight className="h-3.5 w-3.5" />
+                      <span className="font-semibold">Владелец выбран</span>
+                    </div>
+                    <div className="mt-1 text-slate-700">
+                      {selectedOwner.fullName || "—"} ({selectedOwner._id})
+                    </div>
+                    <div>{selectedOwner.phone || "Телефон не указан"} • {selectedOwner.telegramId || "TG не указан"}</div>
+                  </div>
+                ) : null}
               </div>
             </div>
             <DialogFooter>
-              <Button variant="ghost" onClick={() => setOpenCreate(false)} className="text-slate-500 hover:text-slate-900 hover:bg-slate-100">
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setOpenCreate(false)
+                  setSelectedStation({ name: "", address: "", ownerId: "" })
+                  resetOwnerSelection()
+                }}
+                className="text-slate-500 hover:text-slate-900 hover:bg-slate-100"
+              >
                 Отмена
               </Button>
               <Button 
                 onClick={handleCreateStation} 
-                disabled={!selectedStation.name || !selectedStation.ownerId || selectedStation.ownerId.length !== 24}
+                disabled={!selectedStation.name || !selectedOwner}
                 className="bg-emerald-600 hover:bg-emerald-700 text-slate-900"
               >
                 Сохранить

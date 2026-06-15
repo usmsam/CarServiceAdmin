@@ -31,10 +31,17 @@ export interface AdminUser {
   updatedAt?: string;
 }
 
+export interface UsersSearchFilters {
+  stationId?: string;
+  id?: string;
+  telegramId?: string;
+  phone?: string;
+}
+
 export const UsersService = {
-  getUsers: async (stationId?: string): Promise<AdminUser[]> => {
+  getUsers: async (filters?: UsersSearchFilters): Promise<AdminUser[]> => {
     const { data } = await api.get('/backoffice/users', {
-      params: { stationId },
+      params: filters,
     });
     return data;
   },
