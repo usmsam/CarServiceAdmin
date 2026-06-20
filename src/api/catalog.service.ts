@@ -9,8 +9,13 @@ export interface CatalogItem {
   _id: string;
   categoryId: string | CatalogCategoryRef | null;
   title: string;
+  titleRu?: string;
+  titleUz?: string;
   price: number;
+  isActive?: boolean;
   stationId?: string | { _id?: string; name?: string; address?: string } | null;
+  templateItemId?: string | { _id?: string; title?: string; titleRu?: string };
+  reminderRuleId?: string | null;
 }
 
 export const CatalogService = {

@@ -49,8 +49,24 @@ export const UsersService = {
     const { data } = await api.get(`/backoffice/users/${id}`);
     return data;
   },
+  createUser: async (
+    payload: Partial<AdminUser> & { password?: string; stationId?: string | null },
+  ): Promise<AdminUser> => {
+    const { data } = await api.post('/backoffice/users', payload);
+    return data;
+  },
+  updateUser: async (
+    id: string,
+    payload: Partial<AdminUser> & { password?: string; stationId?: string | null },
+  ): Promise<AdminUser> => {
+    const { data } = await api.patch(`/backoffice/users/${id}`, payload);
+    return data;
+  },
   updateUserRole: async (id: string, role: Role): Promise<AdminUser> => {
     const { data } = await api.patch(`/backoffice/users/${id}`, { role });
     return data;
-  }
+  },
+  deleteUser: async (id: string): Promise<void> => {
+    await api.delete(`/backoffice/users/${id}`);
+  },
 };

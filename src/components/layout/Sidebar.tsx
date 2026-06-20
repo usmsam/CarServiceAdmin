@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, ShoppingCart, Users, LogOut, Car, Store, X } from "lucide-react"
+import { FilePlus2, Grid2X2, LayoutDashboard, ShoppingCart, Users, LogOut, Car, Store, X } from "lucide-react"
 import { useUserStore } from "@/store/user.store"
 
 interface SidebarProps {
@@ -37,6 +37,18 @@ export function Sidebar({ onClose }: SidebarProps) {
       icon: Users,
       href: "/users",
       show: true,
+    },
+    {
+      label: "Шаблоны услуг",
+      icon: Grid2X2,
+      href: "/templates",
+      show: user?.role === 'SUPERADMIN',
+    },
+    {
+      label: "Заявки шаблонов",
+      icon: FilePlus2,
+      href: "/template-requests",
+      show: user?.role === 'SUPERADMIN',
     },
     {
       label: "Филиалы СТО",

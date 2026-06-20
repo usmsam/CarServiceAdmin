@@ -9,8 +9,11 @@ export interface StationRef {
 export interface ServiceCategory {
   _id: string;
   name: string;
+  nameRu?: string;
+  nameUz?: string;
   order: number;
   stationId?: string | StationRef | null;
+  templateCategoryId?: string | { _id?: string; name?: string; nameRu?: string };
 }
 
 export const ServiceCategoriesService = {

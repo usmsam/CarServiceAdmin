@@ -16,11 +16,15 @@ import {
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import {
   StationCategoryDetail,
   StationDetailResponse,
   StationsService,
 } from "@/api/stations.service"
+import { ServiceCategoriesService } from "@/api/categories.service"
+import { CatalogService } from "@/api/catalog.service"
+import { AdminUser, UsersService } from "@/api/users.service"
 
 const WEEKDAYS = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'] as const
 
@@ -99,15 +103,34 @@ const buildWorkingHoursSummary = (
     .join(", ")
 }
 
-type TabKey = "main" | "categories"
+type TabKey = "main" | "categories" | "staff"
 
 export default function StationDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const router = useRouter()
   const [detail, setDetail] = useState<StationDetailResponse | null>(null)
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [activeTab, setActiveTab] = useState<TabKey>("main")
   const [openCategoryId, setOpenCategoryId] = useState<string | null>(null)
+  const [staff, setStaff] = useState<AdminUser[]>([])
+  const [stationForm, setStationForm] = useState({
+    name: "",
+    address: "",
+    phone: "",
+    description: "",
+    status: "ACTIVE",
+    isActive: true,
+    latitude: "",
+    longitude: "",
+    workingHours: "",
+  })
+  const [newCategoryName, setNewCategoryName] = useState("")
+  const [serviceForm, setServiceForm] = useState({
+    categoryId: "",
+    title: "",
+    price: 0,
+  })
 
   const loadStation = useCallback(async () => StationsService.getStationById(id), [id])
 
@@ -117,10 +140,29 @@ export default function StationDetailPage({ params }: { params: Promise<{ id: st
     void (async () => {
       setLoading(true)
       try {
-        const res = await loadStation()
+        const [res, stationStaff] = await Promise.all([
+          loadStation(),
+          UsersService.getUsers({ stationId: id }),
+        ])
         if (active) {
           setDetail(res)
+          setStaff(stationStaff)
           setOpenCategoryId(res.categories[0]?._id || null)
+          setServiceForm((prev) => ({
+            ...prev,
+            categoryId: prev.categoryId || res.categories[0]?._id || "",
+          }))
+          setStationForm({
+            name: res.station.name || "",
+            address: res.station.address || "",
+            phone: res.station.phone || "",
+            description: res.station.description || "",
+            status: res.station.status || "ACTIVE",
+            isActive: Boolean(res.station.isActive),
+            latitude: res.station.latitude == null ? "" : String(res.station.latitude),
+            longitude: res.station.longitude == null ? "" : String(res.station.longitude),
+            workingHours: res.station.workingHours || "",
+          })
         }
       } catch (error) {
         console.error("Failed to fetch station details", error)
@@ -148,6 +190,99 @@ export default function StationDetailPage({ params }: { params: Promise<{ id: st
   }
 
   const { station, categories } = detail
+
+  const saveStation = async () => {
+    setSaving(true)
+    try {
+      const updated = await StationsService.updateStation(station._id, {
+        name: stationForm.name,
+        address: stationForm.address,
+        phone: stationForm.phone,
+        description: stationForm.description,
+        status: stationForm.status,
+        isActive: stationForm.isActive,
+        workingHours: stationForm.workingHours,
+        latitude: stationForm.latitude === "" ? undefined : Number(stationForm.latitude),
+        longitude: stationForm.longitude === "" ? undefined : Number(stationForm.longitude),
+      })
+      setDetail((prev) => prev ? { ...prev, station: { ...prev.station, ...updated } } : prev)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const reloadStation = async () => {
+    const [res, stationStaff] = await Promise.all([
+      StationsService.getStationById(id),
+      UsersService.getUsers({ stationId: id }),
+    ])
+    setDetail(res)
+    setStaff(stationStaff)
+  }
+
+  const createCategory = async () => {
+    if (!newCategoryName.trim()) return
+    setSaving(true)
+    try {
+      await ServiceCategoriesService.createCategory({
+        stationId: station._id,
+        name: newCategoryName.trim(),
+        nameRu: newCategoryName.trim(),
+        order: categories.length,
+      })
+      setNewCategoryName("")
+      await reloadStation()
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const updateCategory = async (category: StationCategoryDetail, name: string) => {
+    const nextName = name.trim()
+    if (!nextName || nextName === category.name) return
+    setSaving(true)
+    try {
+      await ServiceCategoriesService.updateCategory(category._id, {
+        name: nextName,
+        nameRu: nextName,
+      })
+      await reloadStation()
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const createService = async () => {
+    if (!serviceForm.categoryId || !serviceForm.title.trim()) return
+    setSaving(true)
+    try {
+      await CatalogService.createItem({
+        stationId: station._id,
+        categoryId: serviceForm.categoryId,
+        title: serviceForm.title.trim(),
+        titleRu: serviceForm.title.trim(),
+        price: Number(serviceForm.price) || 0,
+        isActive: true,
+      })
+      setServiceForm((prev) => ({ ...prev, title: "", price: 0 }))
+      await reloadStation()
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const updateService = async (
+    serviceId: string,
+    patch: { title?: string; titleRu?: string; price?: number; isActive?: boolean },
+  ) => {
+    setSaving(true)
+    try {
+      await CatalogService.updateItem(serviceId, patch)
+      await reloadStation()
+    } finally {
+      setSaving(false)
+    }
+  }
 
   return (
     <motion.div
@@ -196,11 +331,41 @@ export default function StationDetailPage({ params }: { params: Promise<{ id: st
         <TabButton active={activeTab === "categories"} onClick={() => setActiveTab("categories")}>
           Категории
         </TabButton>
+        <TabButton active={activeTab === "staff"} onClick={() => setActiveTab("staff")}>
+          Сотрудники
+        </TabButton>
       </div>
 
       {activeTab === "main" ? (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
+            <section className="bg-white border border-slate-200 rounded-3xl p-5 md:p-6 shadow-sm">
+              <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2 mb-5">
+                <Settings2 className="h-5 w-5 text-blue-500" />
+                Управление СТО
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <Input value={stationForm.name} onChange={(event) => setStationForm((prev) => ({ ...prev, name: event.target.value }))} placeholder="Название" />
+                <Input value={stationForm.phone} onChange={(event) => setStationForm((prev) => ({ ...prev, phone: event.target.value }))} placeholder="Телефон" />
+                <Input className="md:col-span-2" value={stationForm.address} onChange={(event) => setStationForm((prev) => ({ ...prev, address: event.target.value }))} placeholder="Адрес" />
+                <Input value={stationForm.latitude} onChange={(event) => setStationForm((prev) => ({ ...prev, latitude: event.target.value }))} placeholder="Latitude" />
+                <Input value={stationForm.longitude} onChange={(event) => setStationForm((prev) => ({ ...prev, longitude: event.target.value }))} placeholder="Longitude" />
+                <Input className="md:col-span-2" value={stationForm.workingHours} onChange={(event) => setStationForm((prev) => ({ ...prev, workingHours: event.target.value }))} placeholder="График" />
+                <textarea className="md:col-span-2 min-h-20 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-400" value={stationForm.description} onChange={(event) => setStationForm((prev) => ({ ...prev, description: event.target.value }))} placeholder="Описание" />
+                <select className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm" value={stationForm.status} onChange={(event) => setStationForm((prev) => ({ ...prev, status: event.target.value }))}>
+                  <option>ACTIVE</option>
+                  <option>PENDING</option>
+                  <option>BLOCKED</option>
+                </select>
+                <button type="button" onClick={() => setStationForm((prev) => ({ ...prev, isActive: !prev.isActive }))} className={`rounded-md border px-3 py-2 text-sm font-semibold ${stationForm.isActive ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-slate-200 bg-slate-50 text-slate-500"}`}>
+                  {stationForm.isActive ? "Активна в выдаче" : "Выключена"}
+                </button>
+              </div>
+              <Button disabled={saving || !stationForm.name} onClick={saveStation} className="mt-4 bg-slate-900 hover:bg-slate-800 text-white">
+                {saving ? "Сохранение..." : "Сохранить СТО"}
+              </Button>
+            </section>
+
             <section className="bg-white border border-slate-200 rounded-3xl p-5 md:p-6 shadow-sm">
               <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2 mb-5">
                 <Store className="h-5 w-5 text-emerald-500" />
@@ -254,7 +419,7 @@ export default function StationDetailPage({ params }: { params: Promise<{ id: st
             </section>
           </div>
         </div>
-      ) : (
+      ) : activeTab === "categories" ? (
         <section className="bg-white border border-slate-200 rounded-3xl p-5 md:p-6 shadow-sm space-y-4">
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
@@ -262,6 +427,27 @@ export default function StationDetailPage({ params }: { params: Promise<{ id: st
               Привязанные категории
             </h2>
             <span className="text-sm text-slate-500">{categories.length} шт.</span>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.4fr] gap-3 rounded-2xl bg-slate-50 p-3">
+            <div className="grid grid-cols-[1fr_auto] gap-2">
+              <Input value={newCategoryName} onChange={(event) => setNewCategoryName(event.target.value)} placeholder="Новая категория" />
+              <Button disabled={saving || !newCategoryName.trim()} onClick={createCategory} className="bg-slate-900 hover:bg-slate-800 text-white">
+                Добавить
+              </Button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-2">
+              <select className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm" value={serviceForm.categoryId} onChange={(event) => setServiceForm((prev) => ({ ...prev, categoryId: event.target.value }))}>
+                {categories.map((category) => <option key={category._id} value={category._id}>{category.name}</option>)}
+              </select>
+              <Input value={serviceForm.title} onChange={(event) => setServiceForm((prev) => ({ ...prev, title: event.target.value }))} placeholder="Новая услуга" />
+              <div className="flex gap-2">
+                <Input className="w-32" type="number" value={serviceForm.price} onChange={(event) => setServiceForm((prev) => ({ ...prev, price: Number(event.target.value) }))} placeholder="Цена" />
+                <Button disabled={saving || !serviceForm.title.trim() || !serviceForm.categoryId} onClick={createService} className="bg-blue-600 hover:bg-blue-700 text-white">
+                  Добавить
+                </Button>
+              </div>
+            </div>
           </div>
 
           {categories.length === 0 ? (
@@ -280,7 +466,11 @@ export default function StationDetailPage({ params }: { params: Promise<{ id: st
                       className="flex w-full items-center justify-between gap-4 px-4 py-4 text-left hover:bg-slate-100/70 transition-colors"
                     >
                       <div className="min-w-0">
-                        <div className="text-sm font-semibold text-slate-900">{category.name}</div>
+                        <input
+                          defaultValue={category.name}
+                          onBlur={(event) => updateCategory(category, event.target.value)}
+                          className="w-full rounded-md border border-transparent bg-transparent px-2 py-1 text-sm font-semibold text-slate-900 outline-none hover:border-slate-200 focus:border-blue-400 focus:bg-white"
+                        />
                         <div className="text-xs text-slate-500 mt-1">
                           Порядок: {category.order} • Услуг: {category.services.length}
                         </div>
@@ -298,18 +488,38 @@ export default function StationDetailPage({ params }: { params: Promise<{ id: st
                               <div key={service._id} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                                   <div>
-                                    <div className="text-sm font-semibold text-slate-900">{service.title}</div>
+                                    <input
+                                      defaultValue={service.title}
+                                      onBlur={(event) => {
+                                        const value = event.target.value.trim()
+                                        if (value && value !== service.title) {
+                                          void updateService(service._id, { title: value, titleRu: value })
+                                        }
+                                      }}
+                                      className="w-full rounded-md border border-transparent bg-transparent px-2 py-1 text-sm font-semibold text-slate-900 outline-none hover:border-slate-200 focus:border-blue-400 focus:bg-white"
+                                    />
                                     <div className="text-xs text-slate-500 mt-1">
                                       ID: {service._id}
                                     </div>
                                   </div>
                                   <div className="text-right">
-                                    <div className="text-sm font-bold text-slate-900">
-                                      {service.price != null ? `${service.price.toLocaleString("ru-RU")} сум` : "—"}
-                                    </div>
-                                    <div className="text-xs text-slate-500 mt-1">
+                                    <input
+                                      defaultValue={service.price || 0}
+                                      type="number"
+                                      onBlur={(event) => {
+                                        const value = Number(event.target.value) || 0
+                                        if (value !== service.price) {
+                                          void updateService(service._id, { price: value })
+                                        }
+                                      }}
+                                      className="w-32 rounded-md border border-slate-200 bg-white px-2 py-1 text-right text-sm font-bold text-slate-900"
+                                    />
+                                    <button
+                                      onClick={() => updateService(service._id, { isActive: !service.isActive })}
+                                      className="mt-1 text-xs text-slate-500 hover:text-blue-600"
+                                    >
                                       {service.isActive ? "Active" : "Inactive"}
-                                    </div>
+                                    </button>
                                   </div>
                                 </div>
                               </div>
@@ -324,7 +534,42 @@ export default function StationDetailPage({ params }: { params: Promise<{ id: st
             </div>
           )}
         </section>
-      )}
+      ) : null}
+
+      {activeTab === "staff" ? (
+        <section className="bg-white border border-slate-200 rounded-3xl p-5 md:p-6 shadow-sm space-y-4">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <UserIcon className="h-5 w-5 text-purple-500" />
+              Пользователи этой СТО
+            </h2>
+            <span className="text-sm text-slate-500">{staff.length} чел.</span>
+          </div>
+
+          {staff.length === 0 ? (
+            <div className="rounded-2xl border-2 border-dashed border-slate-200 py-12 text-center text-sm text-slate-400">
+              К этой СТО не привязаны пользователи
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {staff.map((user) => (
+                <div key={user._id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="truncate font-semibold text-slate-900">{user.fullName}</div>
+                      <div className="mt-1 text-xs text-slate-500">{user.phone || user.username || user.telegramId || "Контакт не указан"}</div>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                      <Badge className="bg-white text-slate-600 border-slate-200">{user.role}</Badge>
+                      <Badge className={statusTone(user.status)}>{user.status || "—"}</Badge>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      ) : null}
     </motion.div>
   )
 }

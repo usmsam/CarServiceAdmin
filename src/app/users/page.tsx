@@ -7,31 +7,92 @@ import { motion } from "framer-motion"
 import {
   CalendarClock,
   Eye,
+  Plus,
   Phone,
   UserCircle2,
 } from "lucide-react"
 import { DataTable } from "@/components/ui/data-table/data-table"
 import { Badge } from "@/components/ui/badge"
 import { AdminUser, UsersService } from "@/api/users.service"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { ServiceStation, StationsService } from "@/api/stations.service"
 
 export default function UsersPage() {
   const [data, setData] = useState<AdminUser[]>([])
+  const [stations, setStations] = useState<ServiceStation[]>([])
   const [loading, setLoading] = useState(true)
+  const [openCreate, setOpenCreate] = useState(false)
+  const [creating, setCreating] = useState(false)
+  const [draft, setDraft] = useState({
+    fullName: "",
+    phone: "",
+    username: "",
+    password: "",
+    role: "CLIENT" as AdminUser["role"],
+    status: "ACTIVE" as AdminUser["status"],
+    stationId: "",
+  })
 
-  useEffect(() => {
-    const fetchData = async () => {
+  const fetchData = async () => {
       try {
-        const users = await UsersService.getUsers(undefined)
+        const [users, stationItems] = await Promise.all([
+          UsersService.getUsers(undefined),
+          StationsService.getStations(),
+        ])
         setData(users)
+        setStations(stationItems)
       } catch (error) {
         console.error("Не удалось загрузить пользователей", error)
         setData([])
+        setStations([])
       } finally {
         setLoading(false)
       }
-    }
+  }
+
+  useEffect(() => {
     fetchData()
   }, [])
+
+  const handleCreateUser = async () => {
+    if (!draft.fullName.trim()) return
+    setCreating(true)
+    try {
+      await UsersService.createUser({
+        fullName: draft.fullName.trim(),
+        phone: draft.phone || undefined,
+        username: draft.username || undefined,
+        password: draft.password || undefined,
+        role: draft.role,
+        status: draft.status,
+        stationId: draft.stationId || null,
+      })
+      setOpenCreate(false)
+      setDraft({
+        fullName: "",
+        phone: "",
+        username: "",
+        password: "",
+        role: "CLIENT",
+        status: "ACTIVE",
+        stationId: "",
+      })
+      await fetchData()
+    } catch (error) {
+      console.error("Не удалось создать пользователя", error)
+    } finally {
+      setCreating(false)
+    }
+  }
 
   const columns: ColumnDef<AdminUser>[] = [
     {
@@ -185,6 +246,49 @@ export default function UsersPage() {
             Полный список пользователей с переходом в карточку и управлением ролью в detail page.
           </p>
         </div>
+        <Dialog open={openCreate} onOpenChange={setOpenCreate}>
+          <DialogTrigger render={
+            <Button className="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white">
+              <Plus className="h-4 w-4 mr-2" />
+              Создать пользователя
+            </Button>
+          } />
+          <DialogContent className="bg-white border-slate-200 text-slate-900 sm:max-w-[520px]">
+            <DialogHeader>
+              <DialogTitle>Новый пользователь</DialogTitle>
+            </DialogHeader>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 py-3">
+              <Input value={draft.fullName} onChange={(event) => setDraft((prev) => ({ ...prev, fullName: event.target.value }))} placeholder="ФИО" />
+              <Input value={draft.phone} onChange={(event) => setDraft((prev) => ({ ...prev, phone: event.target.value }))} placeholder="Телефон" />
+              <Input value={draft.username} onChange={(event) => setDraft((prev) => ({ ...prev, username: event.target.value }))} placeholder="Username" />
+              <Input type="password" value={draft.password} onChange={(event) => setDraft((prev) => ({ ...prev, password: event.target.value }))} placeholder="Пароль" />
+              <select className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm" value={draft.role} onChange={(event) => setDraft((prev) => ({ ...prev, role: event.target.value as AdminUser["role"] }))}>
+                <option>SUPERADMIN</option>
+                <option>OWNER</option>
+                <option>MECHANIC</option>
+                <option>CLIENT</option>
+                <option>GUEST</option>
+              </select>
+              <select className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm" value={draft.status} onChange={(event) => setDraft((prev) => ({ ...prev, status: event.target.value as AdminUser["status"] }))}>
+                <option>ACTIVE</option>
+                <option>PENDING</option>
+                <option>BLOCKED</option>
+              </select>
+              <select className="md:col-span-2 h-10 rounded-md border border-slate-200 bg-white px-3 text-sm" value={draft.stationId} onChange={(event) => setDraft((prev) => ({ ...prev, stationId: event.target.value }))}>
+                <option value="">Без СТО</option>
+                {stations.map((station) => (
+                  <option key={station._id} value={station._id}>{station.name}</option>
+                ))}
+              </select>
+            </div>
+            <DialogFooter>
+              <Button variant="ghost" onClick={() => setOpenCreate(false)}>Отмена</Button>
+              <Button disabled={creating || !draft.fullName.trim()} onClick={handleCreateUser} className="bg-slate-900 hover:bg-slate-800 text-white">
+                {creating ? "Создание..." : "Создать"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {loading ? (

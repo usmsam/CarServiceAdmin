@@ -15,8 +15,10 @@ import {
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { AdminUser, UsersService } from "@/api/users.service"
+import { ServiceStation, StationsService } from "@/api/stations.service"
 
 type RefEntity = AdminUser["stationId"]
 
@@ -26,7 +28,19 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
   const [user, setUser] = useState<AdminUser | null>(null)
   const [loading, setLoading] = useState(true)
   const [savingRole, setSavingRole] = useState(false)
+  const [savingUser, setSavingUser] = useState(false)
   const [draftRole, setDraftRole] = useState<AdminUser["role"] | "">("")
+  const [stations, setStations] = useState<ServiceStation[]>([])
+  const [draft, setDraft] = useState({
+    fullName: "",
+    phone: "",
+    username: "",
+    telegramId: "",
+    status: "ACTIVE" as AdminUser["status"],
+    isActive: true,
+    stationId: "",
+    password: "",
+  })
 
   const loadUser = useCallback(async () => UsersService.getUserById(id), [id])
 
@@ -36,10 +50,24 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
     void (async () => {
       setLoading(true)
       try {
-        const res = await loadUser()
+        const [res, stationItems] = await Promise.all([
+          loadUser(),
+          StationsService.getStations(),
+        ])
         if (active) {
           setUser(res)
+          setStations(stationItems)
           setDraftRole(res.role)
+          setDraft({
+            fullName: res.fullName || "",
+            phone: res.phone || "",
+            username: res.username || "",
+            telegramId: res.telegramId || "",
+            status: res.status || "ACTIVE",
+            isActive: Boolean(res.isActive),
+            stationId: typeof res.stationId === "string" ? res.stationId : res.stationId?._id || "",
+            password: "",
+          })
         }
       } catch (error) {
         console.error("Failed to fetch user details", error)
@@ -66,6 +94,31 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
       console.error("Не удалось обновить роль пользователя", error)
     } finally {
       setSavingRole(false)
+    }
+  }
+
+  const handleSaveUser = async () => {
+    if (!user || !draft.fullName.trim()) return
+
+    setSavingUser(true)
+    try {
+      const updated = await UsersService.updateUser(user._id, {
+        fullName: draft.fullName.trim(),
+        phone: draft.phone || undefined,
+        username: draft.username || undefined,
+        telegramId: draft.telegramId || undefined,
+        status: draft.status,
+        isActive: draft.isActive,
+        stationId: draft.stationId || null,
+        password: draft.password || undefined,
+      })
+      setUser(updated)
+      setDraftRole(updated.role)
+      setDraft((prev) => ({ ...prev, password: "" }))
+    } catch (error) {
+      console.error("Не удалось обновить пользователя", error)
+    } finally {
+      setSavingUser(false)
     }
   }
 
@@ -171,6 +224,37 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
               <InfoCard label="Язык" value={user.language || "—"} />
               <InfoCard label="Has credentials" value={user.hasCredentials ? "Да" : "Нет"} />
             </div>
+          </section>
+
+          <section className="bg-white border border-slate-200 rounded-3xl p-5 md:p-6 shadow-sm">
+            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4 text-indigo-500" />
+              Полное редактирование
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <Input value={draft.fullName} onChange={(event) => setDraft((prev) => ({ ...prev, fullName: event.target.value }))} placeholder="ФИО" />
+              <Input value={draft.phone} onChange={(event) => setDraft((prev) => ({ ...prev, phone: event.target.value }))} placeholder="Телефон" />
+              <Input value={draft.username} onChange={(event) => setDraft((prev) => ({ ...prev, username: event.target.value }))} placeholder="Username" />
+              <Input value={draft.telegramId} onChange={(event) => setDraft((prev) => ({ ...prev, telegramId: event.target.value }))} placeholder="Telegram ID" />
+              <select className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm" value={draft.status || "ACTIVE"} onChange={(event) => setDraft((prev) => ({ ...prev, status: event.target.value as AdminUser["status"] }))}>
+                <option>ACTIVE</option>
+                <option>PENDING</option>
+                <option>BLOCKED</option>
+              </select>
+              <select className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm" value={draft.stationId} onChange={(event) => setDraft((prev) => ({ ...prev, stationId: event.target.value }))}>
+                <option value="">Без СТО</option>
+                {stations.map((station) => (
+                  <option key={station._id} value={station._id}>{station.name}</option>
+                ))}
+              </select>
+              <Input type="password" value={draft.password} onChange={(event) => setDraft((prev) => ({ ...prev, password: event.target.value }))} placeholder="Новый пароль" />
+              <button type="button" onClick={() => setDraft((prev) => ({ ...prev, isActive: !prev.isActive }))} className={`rounded-md border px-3 py-2 text-sm font-semibold ${draft.isActive ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-slate-200 bg-slate-50 text-slate-500"}`}>
+                {draft.isActive ? "Активен" : "Неактивен"}
+              </button>
+            </div>
+            <Button onClick={handleSaveUser} disabled={savingUser || !draft.fullName.trim()} className="mt-4 bg-slate-900 hover:bg-slate-800 text-white">
+              {savingUser ? "Сохранение..." : "Сохранить пользователя"}
+            </Button>
           </section>
 
           <section className="bg-white border border-slate-200 rounded-3xl p-5 md:p-6 shadow-sm">
